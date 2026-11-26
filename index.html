@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E7C86">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Life Planner">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>html{color-scheme:light dark}body{margin:0}</style>
+<title>Smart Life Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Concept : poste de commandement calme. Barre latérale (bas d'écran sur téléphone),
+   une couleur par nature de journée (jour, nuit, récupération, repos, cours). */
+:root{
+  --bg:#F1F4F8; --surface:#FFFFFF; --surface2:#E9EEF4; --fg:#141B2D; --muted:#59657A; --line:#DAE1EA;
+  --accent:#0E7C86; --accent-fg:#FFFFFF; --accent-soft:#D6EEF0;
+  --day:#B97F00; --day-soft:#FBEFCD; --night:#3B4BA8; --night-soft:#DEE2F7;
+  --recov:#7352A6; --recov-soft:#E9E0F4; --rest:#23875C; --rest-soft:#D7F0E3;
+  --course:#B83A74; --course-soft:#F8DDEA; --conge:#5E6B80; --conge-soft:#E3E8EF;
+  --danger:#C93636; --danger-soft:#FBDEDE; --warn:#A86600; --warn-soft:#FBEACB; --info:#2D5FBF; --info-soft:#DCE7FB;
+  --c-fr:#2F63D0; --c-en:#8446CF; --c-ai:#0E7C86; --c-sport:#D4581F; --c-other:#667386; --c-rattrapage:#B83A74;
+  --shadow:0 1px 2px rgba(20,27,45,.06),0 6px 20px rgba(20,27,45,.05);
+  --f-head:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif; --f-body:'Inter','Segoe UI',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D121C; --surface:#151C2A; --surface2:#1D2638; --fg:#E7ECF4; --muted:#9AA6BB; --line:#283248;
+  --accent:#43C4CF; --accent-fg:#06262A; --accent-soft:#11373B;
+  --day:#F0B429; --day-soft:#3A2F10; --night:#94A2F5; --night-soft:#1F2650;
+  --recov:#BBA0E4; --recov-soft:#2C2342; --rest:#52CD96; --rest-soft:#123A2A;
+  --course:#F27FB0; --course-soft:#44192F; --conge:#9AA6BB; --conge-soft:#222C3F;
+  --danger:#FF8080; --danger-soft:#43191A; --warn:#F2B55E; --warn-soft:#3A2A0E; --info:#8DB1FF; --info-soft:#18284A;
+  --c-fr:#7AA2FF; --c-en:#BE95F5; --c-ai:#43C4CF; --c-sport:#FF9460; --c-other:#9AA6BB; --c-rattrapage:#F27FB0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D121C; --surface:#151C2A; --surface2:#1D2638; --fg:#E7ECF4; --muted:#9AA6BB; --line:#283248;
+  --accent:#43C4CF; --accent-fg:#06262A; --accent-soft:#11373B;
+  --day:#F0B429; --day-soft:#3A2F10; --night:#94A2F5; --night-soft:#1F2650;
+  --recov:#BBA0E4; --recov-soft:#2C2342; --rest:#52CD96; --rest-soft:#123A2A;
+  --course:#F27FB0; --course-soft:#44192F; --conge:#9AA6BB; --conge-soft:#222C3F;
+  --danger:#FF8080; --danger-soft:#43191A; --warn:#F2B55E; --warn-soft:#3A2A0E; --info:#8DB1FF; --info-soft:#18284A;
+  --c-fr:#7AA2FF; --c-en:#BE95F5; --c-ai:#43C4CF; --c-sport:#FF9460; --c-other:#9AA6BB; --c-rattrapage:#F27FB0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 var(--f-body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-head);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:20px} h3{font-size:15px}
+p{margin:0}
+.mut{color:var(--muted)} .sm{font-size:12px} .num{font-variant-numeric:tabular-nums} .mono{font-family:var(--f-mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.app{display:grid;grid-template-columns:224px minmax(0,1fr);gap:28px;max-width:1280px;margin:0 auto;padding-block:20px 40px}
+.side{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center}
+.brand b{font-family:var(--f-head);font-size:17px;line-height:1.1;display:block}
+.brand span{font-size:11.5px;color:var(--muted)}
+.nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;border:0;background:none;cursor:pointer;color:var(--muted);font-weight:500;text-align:left;width:100%}
+.nav:hover{background:var(--surface2);color:var(--fg)}
+.nav.on{background:var(--surface);color:var(--fg);box-shadow:var(--shadow);font-weight:600}
+.nav.on .ic{color:var(--accent)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side-foot{margin-top:14px;padding:12px;border-radius:12px;background:var(--surface2);font-size:12px;color:var(--muted)}
+.main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{font-size:26px;flex:1;min-width:0}
+.top .date{color:var(--muted);font-size:13px;width:100%;order:3}
+.bottom{display:none}
+
+.card{background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-width:0}
+.card>h3,.card-h{flex-wrap:wrap;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.card-h h3{margin:0}
+.grid{display:grid;gap:16px;min-width:0}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.gauto{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp{flex:1}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.dng{color:var(--danger)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn .ic{width:16px;height:16px}
+.ib{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--muted)}
+.ib:hover{background:var(--surface2);color:var(--fg)}
+.ib .ic{width:18px;height:18px}
+.ib.sm{width:28px;height:28px}.ib.sm .ic{width:15px;height:15px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.k-day{--k:var(--day);--ks:var(--day-soft)}.k-prenight{--k:var(--night);--ks:var(--night-soft)}
+.k-recovery{--k:var(--recov);--ks:var(--recov-soft)}.k-rest{--k:var(--rest);--ks:var(--rest-soft)}.k-conge{--k:var(--conge);--ks:var(--conge-soft)}
+.chip.k-day,.chip.k-prenight,.chip.k-recovery,.chip.k-rest,.chip.k-conge{background:var(--ks);color:var(--k)}
+.b-conflict{background:var(--danger-soft);color:var(--danger)}
+.b-afterNight{background:var(--recov-soft);color:var(--recov)}
+.b-ok{background:var(--rest-soft);color:var(--rest)}
+.b-planned{background:var(--surface2);color:var(--muted)}
+.b-present{background:var(--rest-soft);color:var(--rest)}
+.b-absent{background:var(--danger-soft);color:var(--danger)}
+.b-makeup{background:var(--info-soft);color:var(--info)}
+.b-done{background:var(--rest-soft);color:var(--rest)} .b-skipped{background:var(--conge-soft);color:var(--conge)}
+.b-todo{background:var(--warn-soft);color:var(--warn)}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface2);border-radius:12px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:7px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap}
+.tab.on{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.segc{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.segc button{border:0;background:var(--surface);padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border-right:1px solid var(--line)}
+.segc button:last-child{border-right:0}
+.segc button.on{background:var(--accent);color:var(--accent-fg)}
+.segc button.on.s-absent{background:var(--danger);color:#fff}.segc button.on.s-present{background:var(--rest);color:#fff}.segc button.on.s-makeup{background:var(--info);color:#fff}
+.segc button:hover:not(.on){background:var(--surface2)}
+
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);width:100%;min-width:0}
+.field textarea{min-height:64px;resize:vertical}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.hint{font-size:12px;color:var(--muted)}
+input[type=range]{accent-color:var(--accent);padding:0!important;border:0!important}
+
+/* progression */
+.bar{position:relative;height:9px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;left:0;background:var(--bc,var(--accent));border-radius:99px}
+.bar i.pl{background:var(--bc,var(--accent));opacity:.3;border-radius:0}
+.goal{display:flex;flex-direction:column;gap:6px}
+.goal .gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.goal .gh span:last-child{font-size:12px;color:var(--muted);font-weight:500}
+.c-fr{--bc:var(--c-fr)}.c-en{--bc:var(--c-en)}.c-ai{--bc:var(--c-ai)}.c-sport{--bc:var(--c-sport)}.c-other{--bc:var(--c-other)}.c-rattrapage{--bc:var(--c-rattrapage)}.c-full{--bc:var(--course)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--bc);flex:none}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;color:var(--bc);background:color-mix(in srgb,var(--bc) 14%,transparent)}
+
+/* tableau de bord */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:center}
+.hero .lab{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.cd{font-family:var(--f-mono);font-weight:500;font-size:clamp(28px,5vw,44px);letter-spacing:-.02em;line-height:1.1;margin:4px 0}
+.hero h2{font-size:22px}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:13px}
+.alert .ic{width:18px;height:18px;margin-top:1px}
+.alert.danger{background:var(--danger-soft);color:var(--danger)}.alert.warn{background:var(--warn-soft);color:var(--warn)}.alert.info{background:var(--info-soft);color:var(--info)}
+.alert span{color:var(--fg)}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13px}
+.banner.danger{background:var(--danger-soft);color:var(--danger)}
+
+/* activités */
+.act{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;background:var(--surface2)}
+.act.done b{text-decoration:line-through;color:var(--muted)}
+.act.skipped{opacity:.55}
+.act.bad{outline:2px solid var(--danger)}
+.act-b{display:flex;flex-direction:column;min-width:0;flex:1}
+.act-b b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-b span{white-space:nowrap}
+.tag{flex:none}
+.chk{width:24px;height:24px;border-radius:8px;border:2px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;flex:none;color:#fff;padding:0}
+.act.done .chk{background:var(--rest);border-color:var(--rest)}
+.chk .ic{width:15px;height:15px;stroke-width:3}
+
+/* frise 24 h */
+.tl{position:relative;height:22px;border-radius:7px;background:var(--surface2);overflow:hidden;margin-top:8px}
+.tl i{position:absolute;top:0;bottom:0;display:block}
+.tl .t-sleep{background:repeating-linear-gradient(135deg,transparent 0 4px,color-mix(in srgb,var(--muted) 30%,transparent) 4px 6px)}
+.tl .t-day{background:var(--day)}.tl .t-night{background:var(--night)}
+.tl .t-course{background:var(--course);top:3px;bottom:3px;border-radius:4px}
+.tl .t-act{top:5px;bottom:5px;border-radius:4px;background:var(--bc);box-shadow:0 0 0 1.5px var(--surface)}
+.tl .t-now{width:2px;background:var(--danger);top:-2px;bottom:-2px;z-index:3}
+.tl-ax{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;background:var(--k,var(--muted));display:inline-block}
+
+/* calendrier */
+.mhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.mhead h2{flex:1;text-transform:capitalize}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.mdow{font-size:11px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.05em;padding-bottom:3px}
+.cell{display:flex;flex-direction:column;gap:2px;min-height:76px;padding:6px 7px;border-radius:10px;border:1px solid transparent;background:var(--ks,var(--surface2));cursor:pointer;text-align:left;min-width:0;position:relative;overflow:hidden}
+.cell:hover{border-color:var(--k)}
+.cell .n{font-weight:700;font-size:13px}
+.cell .s{font-size:11px;font-weight:700;color:var(--k);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .ft{display:flex;align-items:center;gap:5px;margin-top:auto;font-size:11px;color:var(--muted)}
+.cell .ft em{font-style:normal;font-weight:700}
+.cell.out{opacity:.4}
+.cell.today{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+.cdot{width:9px;height:9px;border-radius:50%;background:var(--rest);display:inline-block}
+.cdot.conflict{background:var(--danger)}.cdot.afterNight{background:var(--recov)}
+.ymonths{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.ym h3{text-transform:capitalize;margin-bottom:8px;cursor:pointer;background:none;border:0;padding:0;text-align:left;font-size:14px;font-family:var(--f-head);color:var(--fg)}
+.ymg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.mini{aspect-ratio:1;border-radius:3px;background:var(--k);opacity:.9;display:block}
+.mini.blank{background:none}
+.mini.today{outline:2px solid var(--fg)}
+
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-head);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.yb{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;height:150px}
+.yb div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-size:10px;color:var(--muted)}
+.yb i{display:block;width:100%;max-width:30px;background:var(--accent);border-radius:5px 5px 0 0;min-height:2px}
+.yb b{font-size:10.5px;color:var(--fg);font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.scroll-x{overflow-x:auto}
+
+.sess{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--surface2)}
+.sess.conflict{background:var(--danger-soft)}
+.sess h3{font-size:14px}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:12px}
+.weekgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.daycard{display:flex;flex-direction:column;gap:10px}
+.daycard.today{outline:2px solid var(--accent)}
+
+/* fenêtres */
+.ov{position:fixed;inset:0;background:rgba(8,12,20,.55);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;overflow-y:auto;z-index:50}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:560px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);margin-block:auto;display:flex;flex-direction:column;gap:14px;min-width:0}
+.modal.wide{max-width:680px}
+.modal-h{display:flex;align-items:center;gap:10px}
+.modal-h h2{flex:1}
+.errs{display:flex;flex-direction:column;gap:6px}
+textarea.code{font-family:var(--f-mono);font-size:11.5px;min-height:220px}
+.toasts{position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:80;pointer-events:none;padding-inline:16px}
+.toast{background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.3);max-width:520px;animation:tin .2s ease-out}
+.toast.warn{background:var(--warn);color:#fff}.toast.err{background:var(--danger);color:#fff}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}}
+.res{display:flex;gap:8px;font-size:12.5px;align-items:flex-start}
+.res .ok{color:var(--rest)}.res .ko{color:var(--danger)}
+
+@media (max-width:900px){
+  .app{display:block;padding-block:14px 96px}
+  .side{display:none}
+  .bottom{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .bnav{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:6px 0;font-size:10.5px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;min-width:0}
+  .bnav.on{color:var(--accent)}
+  .main{gap:14px}
+  .toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .top h1{font-size:22px}
+  .hero,.g2,.g3{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .card{padding:14px}
+  .mgrid{gap:3px}
+  .cell{min-height:60px;padding:4px 5px}
+  .cell .s{font-size:9.5px}
+  .sess{grid-template-columns:minmax(0,1fr)}
+  .weekgrid{grid-template-columns:minmax(0,1fr)}
+  .gauto{grid-template-columns:minmax(0,1fr)}
+}
+
+</style>
+</head><body>
+<div id="app"></div>
+<div id="modal"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script>
+/* =====================================================================
+   MOTEUR — Smart Life Planner
+   Fonctions pures : dates, cycle de rotation 12 h, conflits de cours,
+   règles d'organisation, génération des activités, statistiques.
+   Aucune dépendance au DOM. Les jours sont des entiers (jours depuis 1970,
+   calculés en UTC) pour éviter tout décalage lié à l'heure d'été.
+   ===================================================================== */
+const E = (function () {
+  'use strict';
+
+  /* ---------- Outils de date ---------- */
+  const pad = n => String(n).padStart(2, '0');
+  const mod = (a, b) => ((a % b) + b) % b;
+  const toDn = s => { const [y, m, d] = s.split('-').map(Number); return Math.round(Date.UTC(y, m - 1, d) / 86400000); };
+  const fromDn = n => { const t = new Date(n * 86400000); return `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`; };
+  const parts = n => { const t = new Date(n * 86400000); return { y: t.getUTCFullYear(), m: t.getUTCMonth(), d: t.getUTCDate() }; };
+  const dow = n => new Date(n * 86400000).getUTCDay();            // 0 = dimanche
+  const tmin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  const mtime = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+  const weekStart = n => n - mod(dow(n) + 6, 7);                  // lundi
+  const todayDn = (now = new Date()) => toDn(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+  const tsOf = (dn, min) => { const p = parts(dn); return new Date(p.y, p.m, p.d, 0, min, 0, 0); };
+  const uid = () => Math.random().toString(36).slice(2, 10);
+
+  const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const DAYS_S = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+  const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  const dayLong = n => { const p = parts(n); return `${DAYS[dow(n)]} ${p.d} ${MONTHS[p.m]}`; };
+  const dayShort = n => { const p = parts(n); return `${DAYS_S[dow(n)]} ${p.d}/${pad(p.m + 1)}`; };
+  const fmtH = min => { const h = Math.floor(min / 60), m = Math.round(min % 60); return m ? `${h} h ${pad(m)}` : `${h} h`; };
+
+  const TYPE_LABEL = { fr: 'Français', en: 'Anglais', ai: 'Intelligence artificielle', sport: 'Sport', other: 'Autre', rattrapage: 'Rattrapage Full Stack' };
+
+  /* ---------- Cycle de rotation ----------
+     Phases (une par jour calendaire) :
+       0 = service de jour (09h–21h)
+       1 = repos de 24 h, puis service de nuit à 21h
+       2 = fin du service de nuit à 09h, 1re journée de repos (récupération)
+       3 = 2e journée de repos
+     Le cycle dure 4 jours. La phase de la date de référence est choisie
+     par l'utilisateur : le cycle ne dépend jamais du jour de la semaine. */
+  const PHASE_NAMES = ['Service de jour', 'Repos puis service de nuit', 'Récupération après la nuit', '2e journée de repos'];
+
+  function phaseOf(dn, st) {
+    const s = st.settings;
+    return mod(Number(s.refPhase) + (dn - toDn(s.refDate)), 4);
+  }
+  const leavesOn = (dn, st) => st.leaves.filter(l => l.date === fromDn(dn));
+
+  /* Service qui COMMENCE ce jour-là (null s'il n'y en a pas). */
+  function serviceStarting(dn, st) {
+    const base = ['day', 'night', null, null][phaseOf(dn, st)];
+    const lv = leavesOn(dn, st);
+    const off = lv.find(l => l.kind === 'conge' || l.kind === 'absence');
+    const ren = lv.find(l => l.kind === 'renfort');
+    if (base) return off ? { type: base, cancelled: off.kind } : { type: base };
+    if (ren) return { type: ren.shift === 'night' ? 'night' : 'day', extra: true };
+    return null;
+  }
+  const effService = (dn, st) => { const s = serviceStarting(dn, st); return s && !s.cancelled ? s : null; };
+
+  /* Intervalle absolu (en minutes depuis l'époque) d'un service. */
+  function absInterval(dn, svc, st) {
+    const s = st.settings;
+    const start = dn * 1440 + tmin(svc.type === 'day' ? s.dayStart : s.nightStart);
+    return { s: start, e: start + Number(s.shiftHours) * 60 };
+  }
+
+  /* Plages occupées par le travail sur la journée dn (minutes 0..1440),
+     y compris la fin d'un service de nuit commencé la veille. */
+  function busy(dn, st) {
+    const lo = dn * 1440, hi = lo + 1440, res = [];
+    for (const d of [dn - 1, dn]) {
+      const svc = effService(d, st);
+      if (!svc) continue;
+      const iv = absInterval(d, svc, st);
+      const a = Math.max(iv.s, lo), b = Math.min(iv.e, hi);
+      if (b > a) res.push({ s: a - lo, e: b - lo, type: svc.type, spill: d < dn, extra: !!svc.extra });
+    }
+    return res;
+  }
+
+  /* Nature de la journée, utilisée par toutes les règles d'organisation. */
+  function dayInfo(dn, st) {
+    const own = effService(dn, st);
+    const raw = serviceStarting(dn, st);
+    const b = busy(dn, st);
+    const spill = b.some(x => x.spill);
+    const phase = phaseOf(dn, st);
+    let kind = 'rest';
+    if (own) kind = own.type === 'day' ? 'day' : 'prenight';
+    else if (spill) kind = 'recovery';
+    let label, short;
+    if (kind === 'day') { label = own.extra ? 'Renfort — service de jour' : 'Service de jour'; short = 'Jour'; }
+    else if (kind === 'prenight') { label = own.extra ? 'Renfort — service de nuit à 21h' : 'Repos puis service de nuit à 21h'; short = 'Nuit'; }
+    else if (kind === 'recovery') { label = 'Récupération après la nuit'; short = 'Récup.'; }
+    else if (raw && raw.cancelled) { label = raw.cancelled === 'conge' ? 'Congé' : 'Absence'; short = raw.cancelled === 'conge' ? 'Congé' : 'Absent'; }
+    else if (phase === 3) { label = '2e journée de repos'; short = 'Repos 2'; }
+    else { label = 'Repos'; short = 'Repos'; }
+    return { dn, date: fromDn(dn), phase, kind, label, short, own, cancelled: raw && raw.cancelled ? raw.cancelled : null, busy: b, leaves: leavesOn(dn, st) };
+  }
+
+  /* Liste des services commençant entre deux jours (avec horodatages réels). */
+  function services(from, to, st) {
+    const out = [];
+    for (let d = from; d <= to; d++) {
+      const s = effService(d, st);
+      if (!s) continue;
+      const iv = absInterval(d, s, st);
+      out.push({ dn: d, type: s.type, extra: !!s.extra, start: tsOf(d, iv.s - d * 1440), end: tsOf(d, iv.e - d * 1440) });
+    }
+    return out;
+  }
+  function serviceStatus(now, st) {
+    const t = todayDn(now);
+    const list = services(t - 2, t + 16, st);
+    return { cur: list.find(x => x.start <= now && now < x.end) || null, next: list.find(x => x.start > now) || null };
+  }
+
+  /* ---------- Cours fixes et conflits ---------- */
+  function coursesOn(dn, st) {
+    return st.settings.courses.filter(c => c.dow === dow(dn)).map(c => ({ date: fromDn(dn), dn, start: c.start, end: c.end, s: tmin(c.start), e: tmin(c.end) }));
+  }
+  /* cls : 'conflict' | 'afterNight' | 'ok' (+ tight si enchaînement serré avec la nuit) */
+  function classifyCourse(dn, c, st) {
+    const info = dayInfo(dn, st);
+    const ov = info.busy.find(b => b.s < c.e && b.e > c.s);
+    if (ov) return { cls: 'conflict', reason: ov.type === 'night' ? 'service de nuit' : 'service de jour', info };
+    if (info.kind === 'recovery') return { cls: 'afterNight', reason: 'après un service de nuit', info };
+    const tight = info.busy.some(b => !b.spill && b.type === 'night' && b.s >= c.e && b.s - c.e <= 60);
+    return { cls: 'ok', tight, reason: tight ? 'enchaîne avec le service de nuit' : '', info };
+  }
+  function sessionsInRange(from, to, st) {
+    const out = [];
+    for (let d = from; d <= to; d++) {
+      for (const c of coursesOn(d, st)) {
+        const cl = classifyCourse(d, c, st);
+        const rec = st.sessions[c.date];
+        out.push({ ...c, cls: cl.cls, tight: !!cl.tight, reason: cl.reason, kind: cl.info.kind, status: rec ? rec.status : 'planned', makeup: st.makeups.find(m => m.sessionDate === c.date) || null });
+      }
+    }
+    return out;
+  }
+  function nextCourse(now, st) {
+    const t = todayDn(now);
+    for (let d = t; d <= t + 21; d++) for (const c of coursesOn(d, st)) {
+      if (tsOf(d, c.e) > now) { const cl = classifyCourse(d, c, st); return { ...c, cls: cl.cls, tight: !!cl.tight, reason: cl.reason, status: (st.sessions[c.date] || {}).status || 'planned' }; }
+    }
+    return null;
+  }
+
+  /* ---------- Statut des séances et rattrapages ---------- */
+  function removeMakeup(st, mk) {
+    st.makeups = st.makeups.filter(m => m !== mk);
+    if (mk.activityId) st.activities = st.activities.filter(a => a.id !== mk.activityId);
+  }
+  function setSessionStatus(st, date, status) {
+    st.sessions[date] = { status };
+    const mk = st.makeups.find(m => m.sessionDate === date);
+    if (status === 'absent') {
+      if (!mk) st.makeups.push({ id: uid(), sessionDate: date, status: 'todo', planDate: null, activityId: null });
+      else if (mk.status === 'done') mk.status = mk.activityId ? 'planned' : 'todo';
+    } else if (status === 'makeup') {
+      if (mk) mk.status = 'done'; else st.makeups.push({ id: uid(), sessionDate: date, status: 'done', planDate: null, activityId: null });
+    } else if (mk) removeMakeup(st, mk);
+  }
+  function setActivityStatus(st, act, status) {
+    act.status = status;
+    if (act.makeupId) {
+      const mk = st.makeups.find(m => m.id === act.makeupId);
+      if (mk) {
+        if (status === 'done') { mk.status = 'done'; st.sessions[mk.sessionDate] = { status: 'makeup' }; }
+        else if (mk.status === 'done') { mk.status = 'planned'; st.sessions[mk.sessionDate] = { status: 'absent' }; }
+      }
+    }
+  }
+
+  /* ---------- Règles d'organisation ----------
+     Fenêtres autorisées par type de journée (minutes), intensité maximale,
+     durée maximale d'une activité, nombre maximal d'activités par jour. */
+  const RULES = {
+    day:       { win: [[1290, 1350]],                    max: 30,  cap: 1, sport: false,   base: -30 }, // 21h30–22h30, très court
+    prenight:  { win: [[540, 720]],                      max: 60,  cap: 1, sport: false,   base: -5 },  // matinée légère, sommeil l'après-midi
+    recovery:  { win: [[1050, 1290]],                    max: 60,  cap: 1, sport: 'light', base: -8 },  // 17h30–21h30, après le sommeil
+    rest:      { win: [[480, 720], [840, 1140], [1140, 1290]], max: 120, cap: 5, sport: true, base: 10 }
+  };
+  const SLEEP = { day: [[1350, 1440]], prenight: [[780, 1110]], recovery: [[570, 1050]], rest: [] };
+  const PREF = { ai: 600, en: 660, fr: 900, sport: 1050, rattrapage: 600 };
+
+  const dur = a => tmin(a.end) - tmin(a.start);
+  const overlap = (a, b, c, d) => a < d && c < b;
+
+  /* Contrôle d'une activité (manuelle ou générée). */
+  function validateActivity(act, st, ignoreId) {
+    const errors = [], warnings = [];
+    const dn = toDn(act.date), s = tmin(act.start), e = tmin(act.end);
+    if (!(e > s)) { errors.push("L'heure de fin doit être après l'heure de début."); return { errors, warnings }; }
+    const info = dayInfo(dn, st);
+    const w = info.busy.find(b => overlap(s, e, b.s, b.e));
+    if (w) errors.push(`Chevauche un ${w.type === 'night' ? 'service de nuit' : 'service de jour'} (${mtime(w.s)}–${mtime(w.e)}).`);
+    const c = coursesOn(dn, st).find(c => overlap(s, e, c.s, c.e));
+    if (c) errors.push(`Chevauche le cours Full Stack (${c.start}–${c.end}).`);
+    st.activities.filter(a => a.id !== ignoreId && a.date === act.date && a.status !== 'skipped')
+      .filter(a => overlap(s, e, tmin(a.start), tmin(a.end)))
+      .forEach(a => warnings.push(`Chevauche « ${a.title} » (${a.start}–${a.end}).`));
+    (SLEEP[info.kind] || []).forEach(([a, b]) => { if (overlap(s, e, a, b)) warnings.push('Tombe pendant la période de sommeil conseillée.'); });
+    if (act.type === 'sport') {
+      if (info.kind === 'recovery') warnings.push('Sport intensif déconseillé juste après un service de nuit.');
+      if (info.kind === 'prenight') warnings.push('Évitez le sport la veille du service de nuit.');
+      if (info.kind === 'day') warnings.push('Évitez le sport un jour de service.');
+    }
+    if (info.kind === 'day' && e - s > 30) warnings.push('Jour de service : privilégier le repos et des activités très courtes.');
+    return { errors, warnings };
+  }
+
+  /* ---------- Planificateur ---------- */
+  function occupied(dn, st) {
+    const info = dayInfo(dn, st), occ = [];
+    info.busy.forEach(b => occ.push([b.s - 15, b.e + 15]));
+    coursesOn(dn, st).forEach(c => occ.push([c.s - 15, c.e + 15]));
+    st.activities.forEach(a => { if (a.date === info.date && a.status !== 'skipped') occ.push([tmin(a.start), tmin(a.end)]); });
+    return { info, occ };
+  }
+  const countOnDay = (dn, st) => st.activities.filter(a => a.date === fromDn(dn) && a.status !== 'skipped').length;
+
+  function candidates(dn, type, minutes, st, ignoreCap) {
+    const { info, occ } = occupied(dn, st), rule = RULES[info.kind], out = [];
+    if (type === 'sport' && !rule.sport) return out;
+    if (minutes > rule.max) return out;
+    if (!ignoreCap && countOnDay(dn, st) >= rule.cap) return out;
+    for (const [ws, we] of rule.win) {
+      for (let s = ws; s + minutes <= we; s += 30) {
+        if (!occ.some(([a, b]) => overlap(s, s + minutes, a, b))) out.push({ dn, start: s, end: s + minutes, kind: info.kind, rule });
+      }
+    }
+    return out;
+  }
+  function score(c, type, st) {
+    const same = st.activities.some(a => a.date === fromDn(c.dn) && a.type === type && a.status !== 'skipped');
+    let sc = c.rule.base - countOnDay(c.dn, st) * 9 - (same ? (type === 'sport' ? 40 : 14) : 0) - Math.abs(c.start - (PREF[type] || 600)) / 30;
+    if (type === 'ai' && c.kind === 'rest') sc += 12;
+    if (type === 'sport') sc += c.kind === 'rest' ? 8 : (c.kind === 'recovery' ? -20 : 0);
+    return sc;
+  }
+  function bestSlot(st, from, to, type, minutes, ignoreCap) {
+    let best = null;
+    for (let d = from; d <= to; d++) for (const c of candidates(d, type, minutes, st, ignoreCap)) {
+      const sc = score(c, type, st);
+      if (!best || sc > best.sc + 1e-9) best = { ...c, sc };
+    }
+    return best;
+  }
+  function makeActivity(st, c, type, extra) {
+    const light = type === 'sport' && c.kind === 'recovery';
+    return { id: uid(), date: fromDn(c.dn), start: mtime(c.start), end: mtime(c.end), type, title: TYPE_LABEL[type] + (light ? ' (léger)' : ''), status: 'planned', auto: true, locked: false, ...(extra || {}) };
+  }
+
+  /* Génère les activités manquantes d'une semaine (lundi = weekDn).
+     Ne touche jamais aux activités faites, manuelles ou passées. */
+  function planWeek(st, weekDn, today, replace = true) {
+    const from = Math.max(weekDn, today), to = weekDn + 6, added = [], short = [];
+    if (from > to) return { added, short };
+    if (replace) st.activities = st.activities.filter(a => { const d = toDn(a.date); return !(a.auto && a.status === 'planned' && !a.makeupId && d >= from && d <= to); });
+    const wk = st.activities.filter(a => { const d = toDn(a.date); return d >= weekDn && d <= to && a.status !== 'skipped'; });
+    const have = t => wk.filter(a => a.type === t && (a.status === 'done' || (a.status === 'planned' && toDn(a.date) >= today)));
+    const g = st.settings.goals, tasks = [];
+    const sportNeed = Math.max(0, Number(g.sport) - have('sport').length);
+    const need = {};
+    ['ai', 'fr', 'en'].forEach(t => { need[t] = Math.max(0, Math.round(Number(g[t]) * 60 - have(t).reduce((s, a) => s + dur(a), 0))); });
+    for (let i = 0; i < sportNeed; i++) {
+      const c = bestSlot(st, from, to, 'sport', Number(st.settings.sportMin));
+      if (c) { const a = makeActivity(st, c, 'sport'); st.activities.push(a); added.push(a); }
+      else short.push({ type: 'sport', count: 1 });
+    }
+    const chunk = Number(st.settings.actMin) || 60;
+    ['ai', 'fr', 'en'].forEach(t => {
+      while (need[t] > 0) {
+        let m = Math.min(chunk, need[t]);
+        let c = bestSlot(st, from, to, t, m);
+        if (!c && m > 30) { m = 30; c = bestSlot(st, from, to, t, m); }
+        if (!c) { short.push({ type: t, min: need[t] }); break; }
+        const a = makeActivity(st, c, t); st.activities.push(a); added.push(a); need[t] -= m;
+      }
+    });
+    return { added, short };
+  }
+  function planWeeks(st, firstWeek, n, today, replace = true) {
+    const all = { added: [], short: [] };
+    for (let i = 0; i < n; i++) { const r = planWeek(st, firstWeek + 7 * i, today, replace); all.added.push(...r.added); all.short.push(...r.short.map(s => ({ ...s, week: firstWeek + 7 * i }))); }
+    return all;
+  }
+  /* Après un changement de réglages : retire les activités générées devenues invalides. */
+  function reconcile(st, today) {
+    const before = st.activities.length;
+    st.activities = st.activities.filter(a => !(a.auto && a.status === 'planned' && toDn(a.date) >= today && validateActivity(a, st, a.id).errors.length));
+    return before - st.activities.length;
+  }
+  /* Proposition de créneau de rattrapage (durée du cours manqué). */
+  function proposeMakeupSlot(st, mk, today) {
+    const sd = toDn(mk.sessionDate);
+    const c = st.settings.courses.find(c => c.dow === dow(sd)) || st.settings.courses[0];
+    const minutes = tmin(c.end) - tmin(c.start);
+    return bestSlot(st, Math.max(today, sd + 1), Math.max(today, sd + 1) + 28, 'rattrapage', minutes, true);
+  }
+
+  /* ---------- Progression et statistiques ---------- */
+  function weekProgress(st, weekDn) {
+    const to = weekDn + 6, g = st.settings.goals;
+    const acts = st.activities.filter(a => { const d = toDn(a.date); return d >= weekDn && d <= to; });
+    const res = {};
+    ['fr', 'en', 'ai'].forEach(t => {
+      const m = ty => acts.filter(a => a.type === t && a.status === ty).reduce((s, a) => s + dur(a), 0);
+      res[t] = { done: m('done'), planned: m('planned'), goal: Number(g[t]) * 60 };
+    });
+    const c = ty => acts.filter(a => a.type === 'sport' && a.status === ty).length;
+    res.sport = { done: c('done'), planned: c('planned'), goal: Number(g.sport) };
+    const sess = sessionsInRange(weekDn, to, st);
+    res.fullstack = {
+      done: sess.filter(x => x.status === 'present' || x.status === 'makeup').reduce((s, x) => s + (x.e - x.s), 0),
+      goal: st.settings.courses.reduce((s, c) => s + tmin(c.end) - tmin(c.start), 0),
+      sessions: sess
+    };
+    return res;
+  }
+  function monthProgress(st, y, m) {
+    const from = toDn(`${y}-${pad(m + 1)}-01`), days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(), to = from + days - 1;
+    const g = st.settings.goals, acts = st.activities.filter(a => { const d = toDn(a.date); return d >= from && d <= to && a.status === 'done'; });
+    const res = { days };
+    ['fr', 'en', 'ai'].forEach(t => { res[t] = { done: acts.filter(a => a.type === t).reduce((s, a) => s + dur(a), 0), goal: Math.round(Number(g[t]) * 60 * days / 7) }; });
+    res.sport = { done: acts.filter(a => a.type === 'sport').length, goal: Math.round(Number(g.sport) * days / 7) };
+    return res;
+  }
+  function workStats(st, from, to) {
+    const r = { day: 0, night: 0, extra: 0, conge: 0, absence: 0, hours: 0, rest: 0 };
+    for (let d = from; d <= to; d++) {
+      const raw = serviceStarting(d, st);
+      if (raw && raw.cancelled) { r[raw.cancelled]++; continue; }
+      if (raw) { r[raw.type]++; if (raw.extra) r.extra++; r.hours += Number(st.settings.shiftHours); } else r.rest++;
+    }
+    return r;
+  }
+
+  /* ---------- Alertes (notifications visuelles) ---------- */
+  function computeAlerts(st, today, horizon = 21) {
+    const al = [];
+    const lvl = { danger: 0, warn: 1, info: 2 };
+    sessionsInRange(today, today + horizon, st).forEach(x => {
+      if (x.status === 'absent' || x.status === 'makeup') return;
+      const lab = `${dayLong(x.dn)} ${x.start}–${x.end}`;
+      if (x.cls === 'conflict') al.push({ level: 'danger', kind: 'conflict', dn: x.dn, text: `Cours en conflit avec le ${x.reason} : ${lab}.`, date: x.date });
+      else if (x.cls === 'afterNight') al.push({ level: 'warn', kind: 'afterNight', dn: x.dn, text: `Cours après un service de nuit : ${lab}. Priorité au sommeil.`, date: x.date });
+      else if (x.tight) al.push({ level: 'info', kind: 'tight', dn: x.dn, text: `Cours ${lab} : le service de nuit commence à la sortie.`, date: x.date });
+    });
+    st.activities.forEach(a => {
+      if (a.status !== 'planned' || toDn(a.date) < today) return;
+      const v = validateActivity(a, st, a.id);
+      if (v.errors.length) al.push({ level: 'danger', kind: 'activity', dn: toDn(a.date), actId: a.id, text: `« ${a.title} » le ${dayShort(toDn(a.date))} : ${v.errors[0]}`, date: a.date });
+    });
+    const todo = st.makeups.filter(m => m.status !== 'done');
+    if (todo.length) al.push({ level: 'warn', kind: 'makeups', dn: today, text: `${todo.length} cours à rattraper.` });
+    sessionsInRange(Math.max(today - 28, st.settings.since ? toDn(st.settings.since) : -1e9), today - 1, st).filter(x => x.status === 'planned').forEach(x =>
+      al.push({ level: 'info', kind: 'unrecorded', dn: x.dn, text: `Présence à renseigner : cours du ${dayShort(x.dn)}${x.cls === 'conflict' ? ` (conflit avec le ${x.reason})` : ''}.`, date: x.date }));
+    const wp = weekProgress(st, weekStart(today));
+    ['fr', 'en', 'ai'].forEach(t => {
+      const lack = wp[t].goal - wp[t].done - wp[t].planned;
+      if (lack > 0) al.push({ level: 'info', kind: 'goal', dn: today, text: `${TYPE_LABEL[t]} : ${fmtH(lack)} non planifiées cette semaine.` });
+    });
+    const lackS = wp.sport.goal - wp.sport.done - wp.sport.planned;
+    if (lackS > 0) al.push({ level: 'info', kind: 'goal', dn: today, text: `Sport : ${lackS} séance(s) non planifiée(s) cette semaine.` });
+    return al.sort((a, b) => lvl[a.level] - lvl[b.level] || a.dn - b.dn);
+  }
+
+  /* ---------- Grille mensuelle ---------- */
+  function monthGrid(y, m) {
+    const first = toDn(`${y}-${pad(m + 1)}-01`), last = first + new Date(Date.UTC(y, m + 1, 0)).getUTCDate() - 1;
+    const out = []; for (let d = weekStart(first); d <= weekStart(last) + 6; d++) out.push(d);
+    return { first, last, days: out };
+  }
+
+  /* ---------- Auto-tests ---------- */
+  function selfTest() {
+    const res = [];
+    const ok = (name, cond, info) => res.push({ name, ok: !!cond, info: cond ? '' : String(info === undefined ? '' : info) });
+    const mk = (ref, phase) => ({
+      settings: { configured: true, refDate: ref, refPhase: phase, dayStart: '09:00', nightStart: '21:00', shiftHours: 12,
+        courses: [{ dow: 1, start: '19:00', end: '21:00' }, { dow: 2, start: '19:00', end: '21:00' }],
+        goals: { fr: 2, en: 2, ai: 2, sport: 2 }, sportMin: 60, actMin: 60 },
+      activities: [], sessions: {}, makeups: [], leaves: [], journal: {}, modules: []
+    });
+    const kinds = (st, a, n) => { const o = []; for (let i = 0; i < n; i++) o.push(dayInfo(toDn(a) + i, st).kind); return o.join(','); };
+
+    // Conversion de dates
+    ok('Aller-retour des dates sur 6 ans', (() => { for (let n = toDn('2024-01-01'); n < toDn('2030-01-01'); n++) if (toDn(fromDn(n)) !== n) return false; return true; })());
+    ok('Lundi 2026-01-05', dow(toDn('2026-01-05')) === 1);
+    ok('Début de semaine (dimanche → lundi précédent)', fromDn(weekStart(toDn('2026-01-11'))) === '2026-01-05');
+    ok('Changement d\'heure d\'été sans décalage de jour', toDn('2026-03-30') - toDn('2026-03-29') === 1);
+
+    // Cycle
+    let st = mk('2026-01-05', 0);
+    ok('Cycle jour → nuit → récup → repos 2 → jour', kinds(st, '2026-01-05', 9) === 'day,prenight,recovery,rest,day,prenight,recovery,rest,day', kinds(st, '2026-01-05', 9));
+    ok('Service de jour dure 09:00–21:00', (() => { const b = busy(toDn('2026-01-05'), st); return b.length === 1 && b[0].s === 540 && b[0].e === 1260; })());
+    ok('Nuit : 21:00–24:00 puis 00:00–09:00 le lendemain', (() => { const a = busy(toDn('2026-01-06'), st), b = busy(toDn('2026-01-07'), st); return a.length === 1 && a[0].s === 1260 && a[0].e === 1440 && b.length === 1 && b[0].s === 0 && b[0].e === 540 && b[0].spill; })());
+    ok('24 h de repos entre le service de jour et la nuit', (() => { const l = services(toDn('2026-01-05'), toDn('2026-01-06'), st); return (l[1].start - l[0].end) === 24 * 3600000; })());
+    ok('Deux journées de repos complètes après la nuit', (() => { const l = services(toDn('2026-01-06'), toDn('2026-01-09'), st); return (l[1].start - l[0].end) === 48 * 3600000; })());
+    st = mk('2026-11-26', 0);
+    ok('Référence un jeudi : le cycle ne dépend pas du lundi', kinds(st, '2026-11-26', 4) === 'day,prenight,recovery,rest');
+    ok('Calcul vers le passé (−1 jour = 2e repos)', dayInfo(toDn('2026-11-25'), st).kind === 'rest' && dayInfo(toDn('2026-11-25'), st).phase === 3);
+    ok('Calcul vers le passé (−4 jours = jour)', dayInfo(toDn('2026-11-22'), st).kind === 'day');
+    ok('Calcul loin dans le futur (+1000 jours)', dayInfo(toDn('2026-11-26') + 1000, st).phase === 1000 % 4);
+    st = mk('2026-03-10', 1);
+    ok('Référence = jour de nuit : lendemain en récupération', dayInfo(toDn('2026-03-10'), st).kind === 'prenight' && dayInfo(toDn('2026-03-11'), st).kind === 'recovery' && dayInfo(toDn('2026-03-09'), st).kind === 'day');
+    st = mk('2026-03-10', 3);
+    ok('Référence = 2e repos : lendemain en service de jour', dayInfo(toDn('2026-03-11'), st).kind === 'day');
+
+    // Conflits de cours
+    st = mk('2026-01-05', 0);
+    const cl = d => classifyCourse(toDn(d), coursesOn(toDn(d), st)[0], st);
+    ok('Lundi en service de jour → conflit', cl('2026-01-05').cls === 'conflict');
+    ok('Mardi veille de nuit → sans conflit (enchaînement serré)', cl('2026-01-06').cls === 'ok' && cl('2026-01-06').tight === true);
+    ok('Lundi 2e repos → sans conflit', cl('2026-01-12').cls === 'ok' && !cl('2026-01-12').tight);
+    ok('Mardi en service de jour → conflit', cl('2026-01-13').cls === 'conflict');
+    ok('Lundi après une nuit → cours après service de nuit', cl('2026-01-19').cls === 'afterNight');
+    ok('Mardi 2e repos → sans conflit', cl('2026-01-20').cls === 'ok');
+    ok('Un cours qui finit à 21:00 ne chevauche pas une nuit qui commence à 21:00', !busy(toDn('2026-01-06'), st).some(b => b.s < 1260 && b.e > 1140));
+    ok('Les horaires fixes des cours ne sont jamais modifiés par le planning', (() => { const before = JSON.stringify(st.settings.courses); planWeeks(st, toDn('2026-01-05'), 4, toDn('2026-01-05')); sessionsInRange(toDn('2026-01-05'), toDn('2026-03-01'), st); return JSON.stringify(st.settings.courses) === before; })());
+
+    // Congés / renforts
+    st = mk('2026-01-05', 0); st.leaves.push({ id: 'a', date: '2026-01-05', kind: 'conge' });
+    ok('Congé : le service du jour est annulé, plus de conflit', dayInfo(toDn('2026-01-05'), st).kind === 'rest' && cl('2026-01-05').cls === 'ok');
+    st = mk('2026-01-05', 0); st.leaves.push({ id: 'b', date: '2026-01-08', kind: 'renfort', shift: 'night' });
+    ok('Renfort de nuit un jour de repos', dayInfo(toDn('2026-01-08'), st).kind === 'prenight' && dayInfo(toDn('2026-01-09'), st).busy.some(b => b.spill));
+    st = mk('2026-01-05', 0); st.leaves.push({ id: 'c', date: '2026-01-06', kind: 'absence' });
+    ok('Absence sur le service de nuit : pas de récupération le lendemain', dayInfo(toDn('2026-01-07'), st).kind === 'rest');
+
+    // Rattrapage
+    st = mk('2026-01-05', 0);
+    setSessionStatus(st, '2026-01-05', 'absent');
+    ok('Absence → tâche de rattrapage créée', st.makeups.length === 1 && st.makeups[0].status === 'todo');
+    setSessionStatus(st, '2026-01-05', 'absent');
+    ok('Absence répétée → pas de doublon', st.makeups.length === 1);
+    const slot = proposeMakeupSlot(st, st.makeups[0], toDn('2026-01-05'));
+    ok('Créneau de rattrapage de 2 h proposé hors service', slot && slot.end - slot.start === 120 && validateActivity({ date: fromDn(slot.dn), start: mtime(slot.start), end: mtime(slot.end), type: 'rattrapage', title: 'x' }, st).errors.length === 0);
+    const ra = { id: 'r1', date: fromDn(slot.dn), start: mtime(slot.start), end: mtime(slot.end), type: 'rattrapage', title: 'R', status: 'planned', makeupId: st.makeups[0].id };
+    st.activities.push(ra); st.makeups[0].activityId = 'r1'; st.makeups[0].status = 'planned';
+    setActivityStatus(st, ra, 'done');
+    ok('Rattrapage effectué → séance marquée « rattrapage effectué »', st.makeups[0].status === 'done' && st.sessions['2026-01-05'].status === 'makeup');
+    setSessionStatus(st, '2026-01-05', 'present');
+    ok('Passage à « présent » → rattrapage supprimé', st.makeups.length === 0);
+
+    // Validation des activités
+    st = mk('2026-01-05', 0);
+    ok('Activité pendant un service → refusée', validateActivity({ date: '2026-01-05', start: '10:00', end: '11:00', type: 'fr' }, st).errors.length === 1);
+    ok('Activité pendant la fin de la nuit → refusée', validateActivity({ date: '2026-01-07', start: '07:00', end: '08:00', type: 'fr' }, st).errors.length === 1);
+    ok('Activité pendant un cours → refusée', validateActivity({ date: '2026-01-12', start: '19:30', end: '20:30', type: 'fr' }, st).errors.length === 1);
+    ok('Activité sur le 2e repos → acceptée', validateActivity({ date: '2026-01-08', start: '10:00', end: '11:00', type: 'ai' }, st).errors.length === 0);
+    ok('Sport après une nuit → avertissement', validateActivity({ date: '2026-01-07', start: '18:00', end: '19:00', type: 'sport' }, st).warnings.length > 0);
+
+    // Planificateur : toutes les phases, 8 semaines chacune
+    let bad = '', shortCount = 0, weeks = 0;
+    for (let ph = 0; ph < 4; ph++) for (let off = 0; off < 4; off++) {
+      st = mk('2026-01-05', ph);
+      const w0 = weekStart(toDn('2026-01-05')) + 7 * off;
+      for (let i = 0; i < 8; i++) {
+        const wk = w0 + 7 * i, r = planWeek(st, wk, wk, true); weeks++;
+        shortCount += r.short.length;
+        const acts = st.activities.filter(a => { const d = toDn(a.date); return d >= wk && d <= wk + 6; });
+        for (const a of acts) {
+          const v = validateActivity(a, st, a.id);
+          if (v.errors.length) bad += `${a.date} ${a.start} ${v.errors[0]} | `;
+          if (v.warnings.some(x => x.startsWith('Chevauche «'))) bad += `${a.date} chevauchement | `;
+          if (a.type === 'sport' && ['day', 'prenight'].includes(dayInfo(toDn(a.date), st).kind)) bad += `${a.date} sport interdit | `;
+          if (a.type === 'sport' && dayInfo(toDn(a.date), st).kind === 'recovery' && a.title.indexOf('léger') < 0) bad += `${a.date} sport non léger | `;
+        }
+        const wp = weekProgress(st, wk);
+        if (wp.sport.planned !== 2) bad += `${fromDn(wk)} sport=${wp.sport.planned} | `;
+        ['fr', 'en', 'ai'].forEach(t => { if (wp[t].planned !== 120) bad += `${fromDn(wk)} ${t}=${wp[t].planned} | `; });
+      }
+    }
+    ok(`Planning généré sur ${weeks} semaines : aucun service/cours/chevauchement, objectifs atteints`, !bad && shortCount === 0, bad.slice(0, 300) + ' short=' + shortCount);
+    st = mk('2026-01-05', 0);
+    planWeek(st, toDn('2026-01-05'), toDn('2026-01-05'));
+    const n1 = st.activities.length; planWeek(st, toDn('2026-01-05'), toDn('2026-01-05'));
+    ok('Régénération idempotente (pas de doublon)', st.activities.length === n1);
+    st.activities.forEach(a => { if (a.type === 'ai') a.status = 'done'; });
+    const doneIds = st.activities.filter(a => a.status === 'done').map(a => a.id);
+    planWeek(st, toDn('2026-01-05'), toDn('2026-01-05'));
+    ok('Les activités terminées ne sont jamais supprimées', doneIds.every(id => st.activities.some(a => a.id === id)));
+    st = mk('2026-01-05', 0); planWeek(st, toDn('2026-01-05'), toDn('2026-01-05'));
+    st.settings.refDate = '2026-01-06';
+    const removed = reconcile(st, toDn('2026-01-05'));
+    ok('Changement de date de référence : activités devenues invalides retirées', removed >= 0 && st.activities.every(a => validateActivity(a, st, a.id).errors.length === 0));
+
+    // Stats
+    st = mk('2026-01-05', 0);
+    const ws = workStats(st, toDn('2026-01-05'), toDn('2026-01-12'));
+    ok('Statistiques sur 8 jours : 2 jours, 2 nuits, 48 h', ws.day === 2 && ws.night === 2 && ws.hours === 48, JSON.stringify(ws));
+    // Compte à rebours
+    st = mk('2026-01-05', 0);
+    const ss = serviceStatus(new Date(2026, 0, 5, 12, 0), st);
+    ok('Pendant le service : service en cours trouvé, fin à 21:00', ss.cur && ss.cur.type === 'day' && ss.cur.end.getHours() === 21);
+    ok('Prochain service après le jour = nuit du lendemain à 21:00', ss.next && ss.next.type === 'night' && ss.next.start.getDate() === 6 && ss.next.start.getHours() === 21);
+    const ss2 = serviceStatus(new Date(2026, 0, 7, 12, 0), st);
+    ok('Pendant la récupération : aucun service en cours', !ss2.cur && ss2.next.type === 'day' && ss2.next.start.getDate() === 9);
+    return res;
+  }
+
+  return { pad, mod, toDn, fromDn, parts, dow, tmin, mtime, weekStart, todayDn, tsOf, uid, DAYS, DAYS_S, MONTHS, dayLong, dayShort, fmtH, TYPE_LABEL,
+    PHASE_NAMES, phaseOf, serviceStarting, effService, busy, dayInfo, services, serviceStatus, coursesOn, classifyCourse, sessionsInRange, nextCourse,
+    setSessionStatus, setActivityStatus, removeMakeup, RULES, SLEEP, dur, validateActivity, planWeek, planWeeks, reconcile, proposeMakeupSlot,
+    weekProgress, monthProgress, workStats, computeAlerts, monthGrid, selfTest };
+})();
+if (typeof module !== 'undefined') module.exports = E;
+
+/* =====================================================================
+   APPLICATION — Smart Life Planner
+   État unique S (sauvegardé dans LocalStorage), état d'interface U.
+   Toutes les règles de calcul sont dans le moteur E (au-dessus).
+   ===================================================================== */
+(function () {
+  'use strict';
+  const KEY = 'slp.v1';
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const T = E.TYPE_LABEL;
+  const pad = E.pad;
+
+  /* ---------- Icônes ---------- */
+  const ICONS = {
+    home: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+    trend: '<path d="M3 17l6-6 4 4 8-9"/><path d="M15 6h6v6"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/>',
+    moon: '<path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/>',
+    check: '<path d="M5 12l5 5 9-10"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+    left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>',
+    alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    wand: '<path d="M4 20L16 8M14 4v3M18 8h3M17 3l1 1M20 6l-1-1"/>', copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>'
+  };
+  const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+  /* ---------- État ---------- */
+  function defaultState() {
+    return {
+      v: 1,
+      settings: {
+        configured: false, refDate: E.fromDn(E.todayDn()), refPhase: 0, theme: 'auto',
+        dayStart: '09:00', nightStart: '21:00', shiftHours: 12,
+        courses: [{ dow: 1, start: '19:00', end: '21:00' }, { dow: 2, start: '19:00', end: '21:00' }],
+        goals: { fr: 2, en: 2, ai: 2, sport: 2 }, sportMin: 60, actMin: 60
+      },
+      activities: [], sessions: {}, makeups: [], leaves: [], journal: {},
+      modules: ['HTML & CSS', 'JavaScript', 'Git & GitHub', 'Backend (Node.js / PHP)', 'Bases de données (SQL)', 'API REST', 'Framework front-end (React)', 'Déploiement & projet final']
+        .map(n => ({ id: E.uid(), name: n, pct: 0 }))
+    };
+  }
+  function migrate(o) {
+    const d = defaultState(), s = o.settings || {};
+    return { ...d, ...o, settings: { ...d.settings, ...s, goals: { ...d.settings.goals, ...(s.goals || {}) }, courses: s.courses && s.courses.length ? s.courses : d.settings.courses },
+      activities: o.activities || [], sessions: o.sessions || {}, makeups: o.makeups || [], leaves: o.leaves || [], journal: o.journal || {}, modules: o.modules || d.modules };
+  }
+  function load() { try { const r = localStorage.getItem(KEY); if (r) return migrate(JSON.parse(r)); } catch (e) { /* stockage indisponible */ } return defaultState(); }
+  let S = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignoré */ } }
+
+  const U = {
+    view: 'home', proSub: 'month', acadSub: 'courses', agSub: 'week',
+    mY: new Date().getFullYear(), mM: new Date().getMonth(), yY: new Date().getFullYear(),
+    weekDn: E.weekStart(E.todayDn()), flt: { from: '', to: '', type: 'all', status: 'all' },
+    sf: { when: 'future', cls: 'all', status: 'all' }, modal: null, resetStep: 0
+  };
+
+  /* ---------- Outils d'affichage ---------- */
+  const kcls = info => info.cancelled ? 'k-conge' : 'k-' + info.kind;
+  const kindChip = info => `<span class="chip ${kcls(info)}">${esc(info.label)}</span>`;
+  const CLS = { conflict: 'Conflit', afterNight: 'Après nuit', ok: 'Sans conflit' };
+  const ST = { planned: 'Prévue', present: 'Présent', absent: 'Absent', makeup: 'Rattrapage effectué' };
+  const AST = { planned: 'À faire', done: 'Terminée', skipped: 'Ignorée' };
+  const bar = (done, planned, goal, cls) => { const g = goal || 1, p = Math.min(100, done / g * 100), q = Math.min(100 - p, planned / g * 100); return `<div class="bar ${cls || ''}"><i style="width:${p}%"></i><i class="pl" style="left:${p}%;width:${q}%"></i></div>`; };
+  const seg = (action, items, cur, extra = '') => `<div class="segc">${items.map(([v, l]) => `<button class="${cur === v ? 'on' : ''} s-${v}" data-a="${action}" data-s="${v}" ${extra}>${esc(l)}</button>`).join('')}</div>`;
+  const tabs = (action, items, cur) => `<div class="tabs" role="tablist">${items.map(([v, l]) => `<button class="tab ${cur === v ? 'on' : ''}" role="tab" data-a="${action}" data-s="${v}">${esc(l)}</button>`).join('')}</div>`;
+  const byTime = (a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start);
+  const fmtCd = ms => { if (ms < 0) ms = 0; const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return (d ? d + ' j ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s % 60); };
+  const clock = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const svcName = t => t === 'night' ? 'Service de nuit' : 'Service de jour';
+
+  function toast(msg, kind) {
+    const el = document.createElement('div'); el.className = 'toast ' + (kind || ''); el.textContent = msg; el.setAttribute('role', 'status');
+    $('#toasts').appendChild(el); setTimeout(() => el.remove(), 4200);
+  }
+  function applyTheme() { const t = S.settings.theme; if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme'); }
+  const isDark = () => S.settings.theme === 'dark' || (S.settings.theme === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+
+  /* Replanifie les 4 semaines à venir après un changement de réglage ou de congé. */
+  function replan(quiet) {
+    const t = E.todayDn(), removed = E.reconcile(S, t), r = E.planWeeks(S, E.weekStart(t), 4, t, true);
+    save();
+    if (!quiet) planToast(r, removed);
+    return r;
+  }
+
+  function planToast(r, removed) {
+    const msg = `${r.added.length} activité(s) planifiée(s)${removed ? `, ${removed} retirée(s) car en conflit` : ''}.`;
+    r.short.length ? toast(msg + ' Les créneaux libres ne suffisent pas pour tous les objectifs.', 'warn') : toast(msg);
+  }
+
+  /* ---------- Éléments communs ---------- */
+  function timeline(dn) {
+    const info = E.dayInfo(dn, S), t = E.todayDn(), p = x => (x / 14.4).toFixed(2);
+    const sg = (s, e, cls, title, style) => `<i class="${cls}" style="left:${p(s)}%;width:${p(e - s)}%;${style || ''}" title="${esc(title)}"></i>`;
+    let h = '';
+    (E.SLEEP[info.kind] || []).forEach(([a, b]) => h += sg(a, b, 't-sleep', 'Sommeil conseillé'));
+    info.busy.forEach(b => h += sg(b.s, b.e, 't-' + b.type, `${svcName(b.type)} ${E.mtime(b.s)}–${E.mtime(b.e)}`));
+    E.coursesOn(dn, S).forEach(c => h += sg(c.s, c.e, 't-course', `Cours ${c.start}–${c.end}`));
+    S.activities.filter(a => a.date === info.date && a.status !== 'skipped').forEach(a => h += sg(E.tmin(a.start), E.tmin(a.end), 't-act c-' + a.type, `${a.title} ${a.start}–${a.end}`));
+    if (dn === t) { const n = new Date(); h += `<i class="t-now" style="left:${p(n.getHours() * 60 + n.getMinutes())}%"></i>`; }
+    return `<div class="tl" aria-hidden="true">${h}</div><div class="tl-ax" aria-hidden="true"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>24 h</span></div>`;
+  }
+  const legend = () => `<div class="legend"><span class="k-day"><i></i>Service de jour</span><span class="k-prenight"><i></i>Nuit (21h → 09h)</span><span class="k-recovery"><i></i>Récupération</span><span class="k-rest"><i></i>Repos</span><span style="--k:var(--course)"><i></i>Cours</span><span style="--k:var(--conge)"><i></i>Congé / absence</span></div>`;
+
+  function actRow(a, showDate) {
+    const bad = a.status === 'planned' && E.validateActivity(a, S, a.id).errors.length;
+    return `<div class="act ${a.status} ${bad ? 'bad' : ''} c-${a.type}">
+      <button class="chk" data-a="actToggle" data-id="${a.id}" aria-label="${a.status === 'done' ? 'Marquer à faire' : 'Marquer terminée'}">${a.status === 'done' ? icon('check') : ''}</button>
+      <div class="act-b"><b>${esc(a.title)}</b><span class="mut sm num">${showDate ? E.dayShort(E.toDn(a.date)) + ' · ' : ''}${a.start}–${a.end}${a.auto ? ' · auto' : ''}</span></div>
+      ${a.title.startsWith(T[a.type]) ? '' : `<span class="tag">${esc(T[a.type])}</span>`}
+      <button class="ib sm" data-a="actEdit" data-id="${a.id}" aria-label="Modifier">${icon('edit')}</button>
+    </div>`;
+  }
+  function sessionCard(x, compact) {
+    const bk = x.makeup;
+    return `<div class="sess ${x.cls === 'conflict' && x.status === 'planned' ? 'conflict' : ''}">
+      <div class="stack" style="gap:6px">
+        <h3>${E.dayLong(x.dn)} · ${x.start}–${x.end}</h3>
+        <div class="row" style="gap:6px"><span class="chip b-${x.cls}">${CLS[x.cls]}</span>${x.reason ? `<span class="hint">${esc(x.cls === 'conflict' ? 'pendant le ' + x.reason : x.reason)}</span>` : ''}<span class="chip b-${x.status}">${ST[x.status]}</span>${bk && bk.status !== 'done' ? `<span class="chip b-todo">Rattrapage ${bk.status === 'planned' ? 'planifié' : 'à planifier'}</span>` : ''}</div>
+      </div>
+      ${seg('sess', Object.entries(ST), x.status, `data-d="${x.date}"`)}
+    </div>`;
+  }
+
+  /* ---------- Vues ---------- */
+  function vHome() {
+    const now = new Date(), t = E.todayDn(now), { cur, next } = E.serviceStatus(now, S), info = E.dayInfo(t, S);
+    const wp = E.weekProgress(S, E.weekStart(t)), nc = E.nextCourse(now, S), alerts = E.computeAlerts(S, t);
+    const todays = S.activities.filter(a => a.date === E.fromDn(t) && a.status !== 'skipped').sort(byTime);
+    const weekDone = S.activities.filter(a => { const d = E.toDn(a.date); return d >= E.weekStart(t) && d <= E.weekStart(t) + 6 && a.status === 'done'; }).length;
+    const learnDone = wp.fr.done + wp.en.done + wp.ai.done, learnGoal = wp.fr.goal + wp.en.goal + wp.ai.goal;
+    const todo = S.makeups.filter(m => m.status !== 'done');
+    let h = `<div class="card hero"><div>`;
+    if (cur) {
+      h += `<div class="lab">En service</div><h2>${svcName(cur.type)}${cur.extra ? ' (renfort)' : ''}</h2><div class="cd" data-cd="${cur.end.getTime()}">${fmtCd(cur.end - now)}</div><div class="mut">avant la fin à ${clock(cur.end)}</div>`;
+      if (next) h += `<p class="hint" style="margin-top:8px">Ensuite : ${svcName(next.type).toLowerCase()}, ${E.dayShort(next.dn)} à ${clock(next.start)}.</p>`;
+    } else if (next) {
+      h += `<div class="lab">Prochain service</div><h2>${svcName(next.type)}${next.extra ? ' (renfort)' : ''}</h2><div class="cd" data-cd="${next.start.getTime()}">${fmtCd(next.start - now)}</div><div class="mut">${E.dayLong(next.dn)} à ${clock(next.start)} → ${clock(next.end)}</div>`;
+    } else h += `<div class="lab">Prochain service</div><h2>Aucun service prévu</h2>`;
+    h += `</div><div><div class="row"><span class="lab">Aujourd'hui</span><span class="sp"></span>${kindChip(info)}</div>${timeline(t)}</div></div>`;
+
+    const top = alerts.filter(a => a.level !== 'info' || true).slice(0, 6);
+    h += `<div class="grid g2"><div class="card"><div class="card-h"><h3>Objectifs de la semaine</h3><span class="hint">${E.fmtH(learnDone)} / ${E.fmtH(learnGoal)} d'apprentissage</span></div><div class="stack" style="gap:14px">
+      ${['fr', 'en', 'ai'].map(k => `<div class="goal c-${k}"><div class="gh"><span>${T[k]}</span><span class="num">${E.fmtH(wp[k].done)} faites · ${E.fmtH(wp[k].planned)} prévues / ${E.fmtH(wp[k].goal)}</span></div>${bar(wp[k].done, wp[k].planned, wp[k].goal)}</div>`).join('')}
+      <div class="goal c-sport"><div class="gh"><span>Sport</span><span class="num">${wp.sport.done} faite(s) · ${wp.sport.planned} prévue(s) / ${wp.sport.goal} séances</span></div>${bar(wp.sport.done, wp.sport.planned, wp.sport.goal)}</div>
+      <div class="goal c-full"><div class="gh"><span>Formation Full Stack</span><span class="num">${E.fmtH(wp.fullstack.done)} suivies / ${E.fmtH(wp.fullstack.goal)}</span></div>${bar(wp.fullstack.done, 0, wp.fullstack.goal)}</div></div></div>
+      <div class="stack">
+      <div class="card"><div class="card-h"><h3>Prochain cours</h3><button class="btn sm" data-a="go" data-v="acad">Formation</button></div>
+        ${nc ? `<div class="stack" style="gap:8px"><b>${E.dayLong(nc.dn)} · ${nc.start}–${nc.end}</b><div class="row" style="gap:6px"><span class="chip b-${nc.cls}">${CLS[nc.cls]}</span><span class="chip b-${nc.status}">${ST[nc.status]}</span></div>${nc.reason ? `<p class="hint">${esc(nc.cls === 'conflict' ? 'Pendant le ' + nc.reason + '.' : nc.reason + '.')}</p>` : ''}</div>` : '<p class="mut">Aucun cours dans les 3 prochaines semaines.</p>'}</div>
+      <div class="card"><div class="card-h"><h3>Aujourd'hui</h3><button class="btn sm" data-a="actNew" data-d="${E.fromDn(t)}">${icon('plus')}Activité</button></div>
+        <div class="stack" style="gap:8px">${todays.length ? todays.map(a => actRow(a)).join('') : `<p class="mut">Aucune activité prévue${['day', 'prenight', 'recovery'].includes(info.kind) ? ' : journée à préserver.' : '.'}</p>`}</div>
+        <p class="hint" style="margin-top:10px">${weekDone} activité(s) terminée(s) cette semaine · ${wp.sport.done} séance(s) de sport.</p></div></div></div>`;
+
+    h += `<div class="grid g2"><div class="card"><div class="card-h"><h3>Alertes</h3><span class="hint">${top.length ? top.length + ' en cours' : ''}</span></div><div class="stack" style="gap:8px">${top.length ? top.map(a => `<div class="alert ${a.level}">${icon('alert')}<span>${esc(a.text)}</span></div>`).join('') : '<p class="mut">Aucun conflit à signaler dans les 3 prochaines semaines.</p>'}</div></div>
+      <div class="card"><div class="card-h"><h3>Cours à rattraper</h3><span class="chip ${todo.length ? 'b-todo' : 'b-ok'}">${todo.length}</span></div>
+        ${todo.length ? `<div class="stack" style="gap:8px">${todo.slice(0, 4).map(m => `<div class="row"><span>Cours du ${E.dayShort(E.toDn(m.sessionDate))}</span><span class="sp"></span><span class="chip b-todo">${m.status === 'planned' ? 'Planifié' : 'À planifier'}</span></div>`).join('')}<button class="btn sm" data-a="acadGo">Planifier les rattrapages</button></div>` : '<p class="mut">Rien à rattraper.</p>'}</div></div>`;
+    return h;
+  }
+
+  /* --- Planning professionnel --- */
+  function vPro() {
+    let h = tabs('proSub', [['month', 'Mois'], ['year', 'Année'], ['stats', 'Statistiques'], ['leaves', 'Congés & renforts'], ['journal', 'Journal']], U.proSub);
+    if (U.proSub === 'month') h += proMonth(); else if (U.proSub === 'year') h += proYear(); else if (U.proSub === 'stats') h += proStats();
+    else if (U.proSub === 'leaves') h += proLeaves(); else h += proJournal();
+    return h;
+  }
+  function proMonth() {
+    const g = E.monthGrid(U.mY, U.mM), t = E.todayDn();
+    const ws = E.workStats(S, g.first, g.last);
+    let h = `<div class="card"><div class="mhead"><button class="ib" data-a="mprev" aria-label="Mois précédent">${icon('left')}</button><h2>${E.MONTHS[U.mM]} ${U.mY}</h2><button class="btn sm" data-a="mtoday">Aujourd'hui</button><button class="ib" data-a="mnext" aria-label="Mois suivant">${icon('right')}</button></div>
+      <div class="mgrid">${['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(d => `<div class="mdow">${d}</div>`).join('')}`;
+    g.days.forEach(d => {
+      const info = E.dayInfo(d, S), p = E.parts(d), cs = E.coursesOn(d, S), cc = cs.length ? E.classifyCourse(d, cs[0], S).cls : '';
+      const na = S.activities.filter(a => a.date === info.date && a.status !== 'skipped').length;
+      h += `<button class="cell ${kcls(info)} ${d < g.first || d > g.last ? 'out' : ''} ${d === t ? 'today' : ''}" data-a="day" data-d="${info.date}" aria-label="${E.dayLong(d)} : ${esc(info.label)}"><span class="n">${p.d}</span><span class="s">${esc(info.short)}</span><span class="ft">${cs.length ? `<i class="cdot ${cc}" title="Cours ${CLS[cc]}"></i>` : ''}${na ? `<em>${na}</em>` : ''}</span></button>`;
+    });
+    h += `</div></div><div class="card"><div class="row" style="gap:22px"><div class="stat"><b>${ws.day}</b><span>services de jour</span></div><div class="stat"><b>${ws.night}</b><span>services de nuit</span></div><div class="stat"><b>${ws.hours} h</b><span>heures travaillées</span></div><div class="stat"><b>${ws.rest}</b><span>jours de repos</span></div></div><div style="margin-top:14px">${legend()}</div></div>`;
+    return h;
+  }
+  function proYear() {
+    const t = E.todayDn();
+    let h = `<div class="card"><div class="mhead"><button class="ib" data-a="yprev" aria-label="Année précédente">${icon('left')}</button><h2>${U.yY}</h2><button class="ib" data-a="ynext" aria-label="Année suivante">${icon('right')}</button></div><div class="ymonths">`;
+    for (let m = 0; m < 12; m++) {
+      const g = E.monthGrid(U.yY, m);
+      h += `<div class="ym"><button data-a="openMonth" data-m="${m}">${E.MONTHS[m]}</button><div class="ymg">`;
+      g.days.forEach(d => {
+        if (d < g.first || d > g.last) { h += '<i class="mini blank"></i>'; return; }
+        const info = E.dayInfo(d, S);
+        h += `<i class="mini ${kcls(info)} ${d === t ? 'today' : ''}" title="${esc(E.dayShort(d) + ' · ' + info.label)}"></i>`;
+      });
+      h += '</div></div>';
+    }
+    return h + `</div><div style="margin-top:16px">${legend()}</div></div>`;
+  }
+  function proStats() {
+    const g = E.monthGrid(U.mY, U.mM), ws = E.workStats(S, g.first, g.last);
+    const extra = Object.keys(S.journal).filter(k => k.slice(0, 7) === `${U.mY}-${pad(U.mM + 1)}`).reduce((s, k) => s + (Number(S.journal[k].extra) || 0), 0);
+    const rows = [];
+    for (let m = 0; m < 12; m++) { const q = E.monthGrid(U.mY, m); rows.push({ m, ...E.workStats(S, q.first, q.last) }); }
+    const max = Math.max(1, ...rows.map(r => r.hours));
+    const tot = rows.reduce((a, r) => ({ day: a.day + r.day, night: a.night + r.night, hours: a.hours + r.hours, conge: a.conge + r.conge, absence: a.absence + r.absence, extra: a.extra + r.extra }), { day: 0, night: 0, hours: 0, conge: 0, absence: 0, extra: 0 });
+    return `<div class="card"><div class="mhead"><button class="ib" data-a="mprev" aria-label="Mois précédent">${icon('left')}</button><h2>${E.MONTHS[U.mM]} ${U.mY}</h2><button class="ib" data-a="mnext" aria-label="Mois suivant">${icon('right')}</button></div>
+      <div class="grid gauto" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))"><div class="stat"><b>${ws.day}</b><span>services de jour</span></div><div class="stat"><b>${ws.night}</b><span>services de nuit</span></div><div class="stat"><b>${ws.hours} h</b><span>heures de service</span></div><div class="stat"><b>${ws.conge + ws.absence}</b><span>congés / absences</span></div><div class="stat"><b>${ws.extra}</b><span>renforts</span></div><div class="stat"><b>${E.fmtH(extra)}</b><span>heures sup. saisies</span></div></div></div>
+      <div class="card"><div class="card-h"><h3>Heures de service en ${U.mY}</h3><span class="hint">${tot.hours} h · ${tot.day} jours · ${tot.night} nuits</span></div>
+      <div class="yb">${rows.map(r => `<div><b>${r.hours}</b><i style="height:${Math.max(2, r.hours / max * 100 * .72)}%"></i><span>${E.MONTHS[r.m].slice(0, 3)}</span></div>`).join('')}</div></div>
+      <div class="card scroll-x"><table class="tbl"><thead><tr><th>Mois</th><th>Jours</th><th>Nuits</th><th>Heures</th><th>Congés</th><th>Absences</th><th>Renforts</th></tr></thead><tbody>${rows.map(r => `<tr><td>${E.MONTHS[r.m]}</td><td>${r.day}</td><td>${r.night}</td><td>${r.hours}</td><td>${r.conge}</td><td>${r.absence}</td><td>${r.extra}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function proLeaves() {
+    const list = [...S.leaves].sort((a, b) => b.date.localeCompare(a.date));
+    const L = { conge: 'Congé', absence: 'Absence', renfort: 'Renfort' };
+    return `<div class="card"><div class="card-h"><h3>Ajouter</h3></div><div class="fgrid">
+      <div class="field"><label for="lv-kind">Type</label><select id="lv-kind"><option value="conge">Congé</option><option value="absence">Absence</option><option value="renfort">Renfort (service supplémentaire)</option></select></div>
+      <div class="field"><label for="lv-from">Du</label><input id="lv-from" type="date" value="${E.fromDn(E.todayDn())}"></div>
+      <div class="field"><label for="lv-to">Au (facultatif)</label><input id="lv-to" type="date"></div>
+      <div class="field"><label for="lv-shift">Renfort : service</label><select id="lv-shift"><option value="day">Jour 09h–21h</option><option value="night">Nuit 21h–09h</option></select></div></div>
+      <p class="hint" style="margin:10px 0">Un congé ou une absence annule les services qui commencent ces jours-là. Un renfort ajoute un service un jour de repos.</p>
+      <button class="btn pri" data-a="leaveAdd">${icon('plus')}Ajouter</button></div>
+      <div class="card"><div class="card-h"><h3>Congés, absences et renforts</h3><span class="hint">${list.length} entrée(s)</span></div>
+      <div class="stack" style="gap:8px">${list.length ? list.map(l => `<div class="act"><div class="act-b"><b>${E.dayLong(E.toDn(l.date))} ${E.parts(E.toDn(l.date)).y}</b><span class="mut sm">${L[l.kind]}${l.kind === 'renfort' ? ' · ' + (l.shift === 'night' ? 'nuit' : 'jour') : ''}</span></div><span class="chip ${l.kind === 'renfort' ? 'k-day' : 'k-conge'}">${L[l.kind]}</span><button class="ib sm" data-a="leaveDel" data-id="${l.id}" aria-label="Supprimer">${icon('trash')}</button></div>`).join('') : '<div class="empty">Aucun congé, absence ni renfort enregistré.</div>'}</div></div>`;
+  }
+  function proJournal() {
+    const now = new Date(), t = E.todayDn(now), list = E.services(t - 30, t, S).filter(s => s.start <= now).reverse();
+    return `<div class="card"><div class="card-h"><h3>Journal des services</h3><span class="hint">30 derniers jours</span></div><div class="stack">${list.length ? list.map(s => {
+      const key = `${E.fromDn(s.dn)}|${s.type}`, j = S.journal[key] || {};
+      return `<div class="act" style="align-items:flex-start;flex-wrap:wrap"><div class="act-b" style="min-width:160px"><b>${E.dayLong(s.dn)}</b><span class="mut sm">${svcName(s.type)}${s.extra ? ' (renfort)' : ''} · ${clock(s.start)} → ${clock(s.end)}</span></div>
+        <div class="field" style="flex:2;min-width:200px"><label for="jn-${key}">Note</label><input id="jn-${key}" data-c="jnote" data-key="${key}" value="${esc(j.note || '')}" placeholder="Poste, événements, remarques…"></div>
+        <div class="field" style="width:110px"><label for="je-${key}">Heures sup. (min)</label><input id="je-${key}" type="number" min="0" step="15" data-c="jextra" data-key="${key}" value="${esc(j.extra || '')}"></div></div>`;
+    }).join('') : '<div class="empty">Aucun service passé dans les 30 derniers jours.</div>'}</div></div>`;
+  }
+
+  /* --- Formation --- */
+  function vAcad() {
+    let h = tabs('acadSub', [['courses', 'Cours'], ['makeups', 'Rattrapages'], ['progress', 'Progression']], U.acadSub);
+    if (U.acadSub === 'courses') h += acadCourses(); else if (U.acadSub === 'makeups') h += acadMakeups(); else h += acadProgress();
+    return h;
+  }
+  function acadCourses() {
+    const t = E.todayDn(), f = U.sf;
+    let from = t, to = t + 56;
+    if (f.when === 'past') { from = t - 84; to = t - 1; } else if (f.when === 'all') { from = t - 84; to = t + 56; }
+    let list = E.sessionsInRange(from, to, S).filter(x => (f.cls === 'all' || x.cls === f.cls) && (f.status === 'all' || x.status === f.status));
+    if (f.when !== 'future') list.reverse();
+    const n = { conflict: 0, afterNight: 0, ok: 0 }; E.sessionsInRange(t, t + 56, S).forEach(x => n[x.cls]++);
+    return `<div class="card"><div class="row"><div class="field"><label for="sf-when">Période</label><select id="sf-when" data-c="sf" data-f="when"><option value="future" ${f.when === 'future' ? 'selected' : ''}>8 prochaines semaines</option><option value="past" ${f.when === 'past' ? 'selected' : ''}>12 dernières semaines</option><option value="all" ${f.when === 'all' ? 'selected' : ''}>Tout</option></select></div>
+      <div class="field"><label for="sf-cls">Classement</label><select id="sf-cls" data-c="sf" data-f="cls"><option value="all">Tous</option>${Object.entries(CLS).map(([k, v]) => `<option value="${k}" ${f.cls === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label for="sf-st">Statut</label><select id="sf-st" data-c="sf" data-f="status"><option value="all">Tous</option>${Object.entries(ST).map(([k, v]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+      <span class="sp"></span><div class="row" style="gap:6px"><span class="chip b-ok">${n.ok} sans conflit</span><span class="chip b-conflict">${n.conflict} en conflit</span><span class="chip b-afterNight">${n.afterNight} après nuit</span></div></div></div>
+      <p class="hint">Les cours du lundi et du mardi (19h–21h) sont fixes : ils ne sont jamais déplacés. Marquez « Absent » pour créer automatiquement une tâche de rattrapage.</p>
+      <div class="stack">${list.length ? list.map(x => sessionCard(x)).join('') : '<div class="empty">Aucun cours ne correspond à ces filtres.</div>'}</div>`;
+  }
+  function acadMakeups() {
+    const t = E.todayDn(), list = [...S.makeups].sort((a, b) => a.sessionDate.localeCompare(b.sessionDate));
+    const unrec = E.sessionsInRange(Math.max(t - 56, S.settings.since ? E.toDn(S.settings.since) : -1e9), t - 1, S).filter(x => x.status === 'planned' && x.cls !== 'ok');
+    const act = m => S.activities.find(a => a.id === m.activityId);
+    let h = `<div class="card"><div class="card-h"><h3>Cours manqués et rattrapages</h3><span class="hint">${list.filter(m => m.status !== 'done').length} à rattraper</span></div><div class="stack">`;
+    h += list.length ? list.map(m => {
+      const a = act(m), sd = E.toDn(m.sessionDate);
+      return `<div class="sess"><div class="stack" style="gap:6px"><h3>Cours du ${E.dayLong(sd)}</h3><div class="row" style="gap:6px"><span class="chip b-${m.status === 'done' ? 'makeup' : 'todo'}">${m.status === 'done' ? 'Rattrapage effectué' : m.status === 'planned' ? 'Rattrapage planifié' : 'À planifier'}</span>${a ? `<span class="hint">${E.dayLong(E.toDn(a.date))}, ${a.start}–${a.end}</span>` : ''}</div></div>
+        <div class="row" style="gap:6px">${m.status === 'todo' ? `<button class="btn sm pri" data-a="mkPropose" data-id="${m.id}">${icon('wand')}Proposer un créneau</button><button class="btn sm" data-a="mkManual" data-id="${m.id}">Choisir</button>` : ''}${m.status === 'planned' && a ? `<button class="btn sm" data-a="actEdit" data-id="${a.id}">Modifier</button><button class="btn sm pri" data-a="actToggle" data-id="${a.id}">Fait</button>` : ''}${m.status !== 'done' ? `<button class="btn sm" data-a="mkDone" data-id="${m.id}">Marquer rattrapé</button>` : ''}</div></div>`;
+    }).join('') : '<div class="empty">Aucun cours manqué. Quand vous marquez un cours « Absent », une tâche de rattrapage apparaît ici.</div>';
+    h += '</div></div>';
+    if (unrec.length) h += `<div class="card"><div class="card-h"><h3>À vérifier</h3><span class="hint">Cours passés non renseignés, en conflit ou après une nuit</span></div><div class="stack">${unrec.map(x => sessionCard(x)).join('')}</div></div>`;
+    return h;
+  }
+  function acadProgress() {
+    const t = E.todayDn(), all = E.sessionsInRange(t - 365, t, S).filter(x => E.tsOf(x.dn, x.e) <= new Date());
+    const c = k => all.filter(x => x.status === k).length;
+    const pres = c('present') + c('makeup'), rated = all.filter(x => x.status !== 'planned').length;
+    const avg = S.modules.length ? Math.round(S.modules.reduce((s, m) => s + m.pct, 0) / S.modules.length) : 0;
+    const wp = E.weekProgress(S, E.weekStart(t)).fullstack;
+    return `<div class="card"><div class="card-h"><h3>Présence</h3><span class="hint">sur les 12 derniers mois</span></div><div class="row" style="gap:26px">
+      <div class="stat"><b>${rated ? Math.round(pres / rated * 100) : 0} %</b><span>assiduité (${pres}/${rated})</span></div><div class="stat"><b>${c('present')}</b><span>présent</span></div><div class="stat"><b>${c('absent')}</b><span>absent</span></div><div class="stat"><b>${c('makeup')}</b><span>rattrapés</span></div><div class="stat"><b>${E.fmtH(pres * 120)}</b><span>de cours suivis</span></div></div>
+      <div class="goal c-full" style="margin-top:14px"><div class="gh"><span>Cette semaine</span><span class="num">${E.fmtH(wp.done)} / ${E.fmtH(wp.goal)}</span></div>${bar(wp.done, 0, wp.goal)}</div></div>
+      <div class="card"><div class="card-h"><h3>Progression Full Stack</h3><span class="chip b-ok">${avg} %</span></div><div class="goal c-full">${bar(avg, 0, 100)}</div>
+      <div class="stack" style="margin-top:14px;gap:12px">${S.modules.map(m => `<div class="goal c-full"><div class="row" style="gap:8px"><input class="field" style="flex:1;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)" aria-label="Nom du module" data-c="modName" data-id="${m.id}" value="${esc(m.name)}"><b class="num" style="width:44px;text-align:right">${m.pct} %</b><button class="ib sm" data-a="modDel" data-id="${m.id}" aria-label="Supprimer le module">${icon('trash')}</button></div><input type="range" min="0" max="100" step="5" value="${m.pct}" aria-label="Avancement de ${esc(m.name)}" data-c="modPct" data-id="${m.id}"></div>`).join('')}
+      <div class="row"><input id="mod-new" placeholder="Nouveau module" aria-label="Nouveau module" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface)"><button class="btn" data-a="modAdd">${icon('plus')}Ajouter</button></div></div></div>`;
+  }
+
+  /* --- Développement personnel --- */
+  function vPerso() {
+    const t = E.todayDn(), wk = E.weekStart(t), wp = E.weekProgress(S, wk), mp = E.monthProgress(S, new Date().getFullYear(), new Date().getMonth());
+    const acts = S.activities.filter(a => { const d = E.toDn(a.date); return d >= wk && d <= wk + 6 && a.status !== 'skipped'; }).sort(byTime);
+    const card = k => {
+      const w = wp[k], m = mp[k], isS = k === 'sport', fmt = v => isS ? v + '' : E.fmtH(v);
+      const list = acts.filter(a => a.type === k);
+      return `<div class="card c-${k}"><div class="card-h"><h3>${isS ? 'Sport' : T[k]}</h3><button class="btn sm" data-a="actNew" data-d="${E.fromDn(t)}" data-t="${k}">${icon('plus')}Ajouter</button></div>
+        <div class="stack" style="gap:12px"><div class="goal"><div class="gh"><span>Semaine</span><span class="num">${fmt(w.done)} faite(s) · ${fmt(w.planned)} prévue(s) / ${fmt(w.goal)}${isS ? ' séances' : ''}</span></div>${bar(w.done, w.planned, w.goal)}</div>
+        <div class="goal"><div class="gh"><span>Mois</span><span class="num">${fmt(m.done)} / ${fmt(m.goal)}${isS ? ' séances' : ''}</span></div>${bar(m.done, 0, m.goal)}</div>
+        <div class="stack" style="gap:6px">${list.length ? list.map(a => actRow(a, true)).join('') : '<p class="mut sm">Rien de planifié cette semaine.</p>'}</div></div></div>`;
+    };
+    let hist = '';
+    for (let i = 5; i >= 0; i--) {
+      const w = wk - 7 * i, p = E.weekProgress(S, w), tot = ['fr', 'en', 'ai'].reduce((s, k) => s + p[k].done, 0), goal = ['fr', 'en', 'ai'].reduce((s, k) => s + p[k].goal, 0);
+      hist += `<div class="goal"><div class="gh"><span>Semaine du ${E.parts(w).d}/${pad(E.parts(w).m + 1)}</span><span class="num">${E.fmtH(tot)} / ${E.fmtH(goal)} · sport ${p.sport.done}/${p.sport.goal}</span></div>${bar(tot, 0, goal)}</div>`;
+    }
+    return `<div class="row"><p class="mut" style="flex:1;min-width:200px">Objectifs : ${S.settings.goals.fr} h de français, ${S.settings.goals.en} h d'anglais, ${S.settings.goals.ai} h d'IA et ${S.settings.goals.sport} séances de sport par semaine.</p><button class="btn pri" data-a="planWeek" data-w="${wk}">${icon('wand')}Planifier la semaine</button></div>
+      <div class="grid gauto">${['fr', 'en', 'ai', 'sport'].map(card).join('')}</div>
+      <div class="card"><div class="card-h"><h3>Apprentissage : 6 dernières semaines</h3><span class="hint">français + anglais + IA</span></div><div class="stack" style="gap:12px">${hist}</div></div>`;
+  }
+
+  /* --- Agenda --- */
+  function vAgenda() {
+    let h = tabs('agSub', [['week', 'Semaine'], ['list', 'Liste filtrée']], U.agSub);
+    if (U.agSub === 'week') {
+      const w = U.weekDn, p1 = E.parts(w), p2 = E.parts(w + 6), t = E.todayDn();
+      h += `<div class="card"><div class="row"><button class="ib" data-a="wprev" aria-label="Semaine précédente">${icon('left')}</button><h3 style="flex:1;text-align:center;min-width:150px">Du ${p1.d} ${p1.m === p2.m ? '' : E.MONTHS[p1.m]} au ${p2.d} ${E.MONTHS[p2.m]} ${p2.y}</h3><button class="ib" data-a="wnext" aria-label="Semaine suivante">${icon('right')}</button><button class="btn sm" data-a="wtoday">Cette semaine</button></div>
+        <div class="row" style="margin-top:12px"><button class="btn pri sm" data-a="planWeek" data-w="${w}">${icon('wand')}Planifier la semaine</button><button class="btn sm" data-a="planAhead" data-w="${w}">Planifier 4 semaines</button><button class="btn sm dng" data-a="clearAuto" data-w="${w}">Vider le planning auto</button></div>
+        <p class="hint" style="margin-top:8px">La planification répartit les activités selon la nature de chaque journée. Les activités terminées ou modifiées à la main ne sont jamais supprimées.</p></div><div class="weekgrid">`;
+      for (let d = w; d <= w + 6; d++) {
+        const info = E.dayInfo(d, S), cs = E.coursesOn(d, S), acts = S.activities.filter(a => a.date === info.date).sort(byTime);
+        h += `<div class="card daycard ${d === t ? 'today' : ''}"><div class="row"><button class="btn sm" style="border:0;padding:0;font-size:15px;font-family:var(--f-head)" data-a="day" data-d="${info.date}">${E.dayLong(d)}</button><span class="sp"></span><button class="ib sm" data-a="actNew" data-d="${info.date}" aria-label="Ajouter une activité">${icon('plus')}</button></div>${kindChip(info)}${timeline(d)}
+          ${cs.map(c => { const cl = E.classifyCourse(d, c, S), st = (S.sessions[c.date] || {}).status || 'planned'; return `<div class="row" style="gap:6px"><span class="chip b-${cl.cls}">Cours ${c.start}–${c.end}</span><span class="chip b-${st}">${ST[st]}</span></div>`; }).join('')}
+          <div class="stack" style="gap:6px">${acts.map(a => actRow(a)).join('')}</div></div>`;
+      }
+      return h + '</div>';
+    }
+    const f = U.flt, from = f.from ? E.toDn(f.from) : -1e9, to = f.to ? E.toDn(f.to) : 1e9;
+    const list = S.activities.filter(a => { const d = E.toDn(a.date); return d >= from && d <= to && (f.type === 'all' || a.type === f.type) && (f.status === 'all' || a.status === f.status); }).sort(byTime);
+    return h + `<div class="card"><div class="fgrid"><div class="field"><label for="f-from">Du</label><input id="f-from" type="date" data-c="flt" data-f="from" value="${f.from}"></div><div class="field"><label for="f-to">Au</label><input id="f-to" type="date" data-c="flt" data-f="to" value="${f.to}"></div>
+      <div class="field"><label for="f-type">Activité</label><select id="f-type" data-c="flt" data-f="type"><option value="all">Toutes</option>${Object.entries(T).map(([k, v]) => `<option value="${k}" ${f.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label for="f-st">Statut</label><select id="f-st" data-c="flt" data-f="status"><option value="all">Tous</option>${Object.entries(AST).map(([k, v]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div></div>
+      <div class="row" style="margin-top:12px"><span class="hint">${list.length} activité(s)</span><span class="sp"></span><button class="btn sm" data-a="fltReset">Réinitialiser</button><button class="btn sm pri" data-a="actNew" data-d="${E.fromDn(E.todayDn())}">${icon('plus')}Nouvelle activité</button></div></div>
+      <div class="stack" style="gap:8px">${list.length ? list.slice(0, 200).map(a => actRow(a, true)).join('') : '<div class="empty">Aucune activité ne correspond à ces filtres.</div>'}</div>`;
+  }
+
+  /* --- Réglages --- */
+  const PHASE_OPT = ['Je suis en service de jour ce jour-là (09h–21h)', 'Je commence un service de nuit ce jour-là (21h)', '1re journée de repos : ma nuit s\'est terminée à 09h', '2e journée de repos'];
+  function preview(ref, phase, n = 8) {
+    const st = { ...S, settings: { ...S.settings, refDate: ref, refPhase: phase }, leaves: [] };
+    return `<div class="row" style="gap:6px">${Array.from({ length: n }, (_, i) => { const d = E.toDn(ref) + i, info = E.dayInfo(d, st); return `<div class="chip ${kcls(info)}" style="flex-direction:column;gap:0;padding:6px 10px;border-radius:10px;min-width:64px"><span style="font-size:11px;opacity:.8">${E.DAYS_S[E.dow(d)]} ${E.parts(d).d}</span><span>${esc(info.short)}</span></div>`; }).join('')}</div>`;
+  }
+  function refForm(ref, phase) {
+    return `<div class="fgrid"><div class="field"><label for="st-ref">Date de référence</label><input id="st-ref" type="date" class="livep" value="${ref}"></div>
+      <div class="field" style="grid-column:span 2;min-width:240px"><label for="st-phase">Situation à cette date</label><select id="st-phase" class="livep">${PHASE_OPT.map((o, i) => `<option value="${i}" ${Number(phase) === i ? 'selected' : ''}>${o}</option>`).join('')}</select></div></div>
+      <div style="margin-top:12px"><div class="hint" style="margin-bottom:6px">Aperçu des 8 jours à partir de la date de référence :</div><div id="st-prev">${preview(ref, Number(phase))}</div></div>`;
+  }
+  function vSettings() {
+    const s = S.settings;
+    return `<div class="card"><div class="card-h"><h3>Cycle de travail</h3></div>${refForm(s.refDate, s.refPhase)}
+      <p class="hint" style="margin-top:10px">Cycle de 4 jours : service de jour (09h–21h), 24 h de repos puis service de nuit (21h–09h), première journée de repos, deuxième journée de repos. Il n'est jamais lié au lundi.</p></div>
+      <div class="card"><div class="card-h"><h3>Objectifs hebdomadaires</h3></div><div class="fgrid">
+        ${[['fr', 'Français (heures)'], ['en', 'Anglais (heures)'], ['ai', 'Intelligence artificielle (heures)'], ['sport', 'Sport (séances)']].map(([k, l]) => `<div class="field"><label for="g-${k}">${l}</label><input id="g-${k}" type="number" min="0" max="20" step="0.5" value="${s.goals[k]}"></div>`).join('')}
+        <div class="field"><label for="g-sportMin">Durée d'une séance de sport (min)</label><input id="g-sportMin" type="number" min="30" max="180" step="15" value="${s.sportMin}"></div></div>
+        <div class="row" style="margin-top:14px"><button class="btn pri" data-a="saveSettings">Enregistrer et replanifier</button></div></div>
+      <div class="card"><div class="card-h"><h3>Cours fixes (non modifiables)</h3></div><div class="row" style="gap:8px">${s.courses.map(c => `<span class="chip b-ok" style="background:var(--course-soft);color:var(--course)">${E.DAYS[c.dow]} ${c.start}–${c.end}</span>`).join('')}</div><p class="hint" style="margin-top:8px">Développement Informatique – Option Full Stack. Ces horaires ne sont jamais déplacés par l'application.</p></div>
+      <div class="card"><div class="card-h"><h3>Apparence</h3></div>${seg('theme', [['auto', 'Automatique'], ['light', 'Clair'], ['dark', 'Sombre']], s.theme)}</div>
+      <div class="card"><div class="card-h"><h3>Données</h3></div><p class="hint" style="margin-bottom:10px">Tout est enregistré automatiquement dans ce navigateur. Exportez une copie avant de changer d'appareil.</p><div class="row"><button class="btn" data-a="export">Exporter</button><button class="btn" data-a="import">Importer</button><button class="btn" data-a="runTests">Tester les calculs</button><span class="sp"></span>
+        ${U.resetStep ? `<span class="hint">Tout effacer définitivement ?</span><button class="btn dng" data-a="resetGo">Oui, effacer</button><button class="btn" data-a="resetNo">Annuler</button>` : `<button class="btn dng" data-a="resetAsk">Réinitialiser</button>`}</div></div>`;
+  }
+
+  /* ---------- Fenêtres ---------- */
+  function modalDay(date) {
+    const dn = E.toDn(date), info = E.dayInfo(dn, S), cs = E.coursesOn(dn, S), acts = S.activities.filter(a => a.date === date).sort(byTime);
+    const raw = E.serviceStarting(dn, S), lv = info.leaves, sv = E.effService(dn, S), jkey = sv ? `${date}|${sv.type}` : null, j = jkey ? (S.journal[jkey] || {}) : {};
+    let h = `<div class="modal-h"><h2>${E.dayLong(dn)}</h2><button class="ib" data-a="closeModal" aria-label="Fermer">${icon('x')}</button></div><div class="row">${kindChip(info)}<span class="hint">${E.parts(dn).y}</span></div>${timeline(dn)}`;
+    h += `<div class="card" style="box-shadow:none;background:var(--surface2);padding:12px"><div class="hint" style="margin-bottom:8px">Service de ce jour</div><div class="row" style="gap:6px">
+      ${raw && raw.type && !raw.extra ? `<button class="btn sm" data-a="leaveDay" data-d="${date}" data-k="conge">Congé</button><button class="btn sm" data-a="leaveDay" data-d="${date}" data-k="absence">Absence</button>` : `<button class="btn sm" data-a="leaveDay" data-d="${date}" data-k="renfort" data-sh="day">Renfort jour</button><button class="btn sm" data-a="leaveDay" data-d="${date}" data-k="renfort" data-sh="night">Renfort nuit</button>`}
+      ${lv.length ? `<button class="btn sm dng" data-a="leaveClear" data-d="${date}">Retirer ${lv.map(l => ({ conge: 'le congé', absence: "l'absence", renfort: 'le renfort' }[l.kind])).join(', ')}</button>` : ''}</div></div>`;
+    cs.forEach(c => { const x = E.sessionsInRange(dn, dn, S).find(s => s.start === c.start); if (x) h += `<div><div class="hint" style="margin-bottom:6px">Cours Full Stack</div>${sessionCard(x)}</div>`; });
+    h += `<div><div class="row" style="margin-bottom:8px"><h3>Activités</h3><span class="sp"></span><button class="btn sm" data-a="actNew" data-d="${date}">${icon('plus')}Ajouter</button></div><div class="stack" style="gap:6px">${acts.length ? acts.map(a => actRow(a)).join('') : '<p class="mut sm">Aucune activité.</p>'}</div></div>`;
+    if (jkey) h += `<div class="field"><label for="jn-m">Journal du service (${svcName(sv.type).toLowerCase()})</label><textarea id="jn-m" data-c="jnote" data-key="${jkey}" placeholder="Notes sur ce service…">${esc(j.note || '')}</textarea></div>`;
+    return h;
+  }
+  function modalAct(m) {
+    const a = m.act, isNew = !m.id;
+    return `<div class="modal-h"><h2>${isNew ? 'Nouvelle activité' : "Modifier l'activité"}</h2><button class="ib" data-a="closeModal" aria-label="Fermer">${icon('x')}</button></div>
+      <div class="fgrid"><div class="field" style="grid-column:1/-1"><label for="af-title">Titre</label><input id="af-title" class="actf" value="${esc(a.title)}"></div>
+      <div class="field"><label for="af-type">Type</label><select id="af-type" class="actf">${Object.entries(T).map(([k, v]) => `<option value="${k}" ${a.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label for="af-status">Statut</label><select id="af-status" class="actf">${Object.entries(AST).map(([k, v]) => `<option value="${k}" ${a.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label for="af-date">Date</label><input id="af-date" type="date" class="actf" value="${a.date}"></div>
+      <div class="field"><label for="af-start">Début</label><input id="af-start" type="time" step="900" class="actf" value="${a.start}"></div>
+      <div class="field"><label for="af-end">Fin</label><input id="af-end" type="time" step="900" class="actf" value="${a.end}"></div></div>
+      <div id="af-msg" class="errs" aria-live="polite"></div>
+      <div class="row">${isNew ? '' : `<button class="btn dng" data-a="actDel" data-id="${m.id}">${icon('trash')}Supprimer</button>`}<span class="sp"></span><button class="btn" data-a="closeModal">Annuler</button><button class="btn pri" data-a="actSave">Enregistrer</button></div>`;
+  }
+  function readAct() {
+    const g = id => ($('#' + id) || {}).value;
+    return { title: (g('af-title') || '').trim(), type: g('af-type'), status: g('af-status'), date: g('af-date'), start: g('af-start'), end: g('af-end') };
+  }
+  function liveCheck() {
+    const el = $('#af-msg'); if (!el || !U.modal || U.modal.t !== 'act') return;
+    const a = readAct(); if (!a.date || !a.start || !a.end) { el.innerHTML = ''; return; }
+    const v = E.validateActivity(a, S, U.modal.id);
+    el.innerHTML = v.errors.map(e => `<div class="alert danger">${icon('alert')}<span>${esc(e)}</span></div>`).join('') + v.warnings.map(e => `<div class="alert warn">${icon('alert')}<span>${esc(e)}</span></div>`).join('') || '';
+  }
+  function modalSetup() {
+    const s = S.settings;
+    return `<div class="modal-h"><h2>Bienvenue dans Smart Life Planner</h2></div><p class="mut">Indiquez un jour de votre rotation. Tout le planning est calculé à partir de cette date de référence.</p>${refForm(s.refDate, s.refPhase)}
+      <div class="row"><button class="btn" data-a="setupLater">Plus tard</button><span class="sp"></span><button class="btn pri" data-a="setupSave">Valider et planifier</button></div>`;
+  }
+  function modalJson(m) {
+    return `<div class="modal-h"><h2>${m.mode === 'export' ? 'Exporter' : 'Importer'}</h2><button class="ib" data-a="closeModal" aria-label="Fermer">${icon('x')}</button></div>
+      <p class="hint">${m.mode === 'export' ? 'Copiez ce texte et conservez-le dans un fichier. Il contient toutes vos données.' : 'Collez ici une sauvegarde exportée. Elle remplacera les données actuelles.'}</p>
+      <div class="field"><label for="js-box">Sauvegarde (JSON)</label><textarea id="js-box" class="code" ${m.mode === 'export' ? 'readonly' : ''}>${m.mode === 'export' ? esc(JSON.stringify(S, null, 1)) : ''}</textarea></div>
+      <div class="row"><span class="sp"></span>${m.mode === 'export' ? `<button class="btn pri" data-a="copyJson">${icon('copy')}Copier</button>` : `<button class="btn pri" data-a="importGo">Importer</button>`}</div>`;
+  }
+  function modalTests() {
+    const r = E.selfTest(), ko = r.filter(x => !x.ok).length;
+    return `<div class="modal-h"><h2>Tests des calculs</h2><button class="ib" data-a="closeModal" aria-label="Fermer">${icon('x')}</button></div><div class="row"><span class="chip ${ko ? 'b-conflict' : 'b-ok'}">${r.length - ko} / ${r.length} réussis</span></div>
+      <div class="stack" style="gap:5px">${r.map(x => `<div class="res"><span class="${x.ok ? 'ok' : 'ko'}">${x.ok ? '✓' : '✗'}</span><span>${esc(x.name)}${x.ok ? '' : ' — ' + esc(x.info)}</span></div>`).join('')}</div>`;
+  }
+  function renderModal() {
+    const el = $('#modal'), m = U.modal;
+    if (!m) { el.innerHTML = ''; return; }
+    const body = m.t === 'day' ? modalDay(m.date) : m.t === 'act' ? modalAct(m) : m.t === 'setup' ? modalSetup() : m.t === 'json' ? modalJson(m) : modalTests();
+    el.innerHTML = `<div class="ov" data-a="ovClick"><div class="modal ${m.t === 'tests' || m.t === 'day' ? 'wide' : ''}" role="dialog" aria-modal="true" aria-label="Fenêtre">${body}</div></div>`;
+    if (m.t === 'act') liveCheck();
+  }
+
+  /* ---------- Rendu principal ---------- */
+  const VIEWS = {
+    home: { t: 'Accueil', n: 'Accueil', s: 'Accueil', i: 'home', f: vHome }, pro: { t: 'Planning professionnel', n: 'Planning pro', s: 'Service', i: 'shield', f: vPro },
+    acad: { t: 'Formation Full Stack', n: 'Formation', s: 'Cours', i: 'cap', f: vAcad }, perso: { t: 'Développement personnel', n: 'Développement', s: 'Progrès', i: 'trend', f: vPerso },
+    agenda: { t: 'Agenda', n: 'Agenda', s: 'Agenda', i: 'calendar', f: vAgenda }, settings: { t: 'Réglages', n: 'Réglages', s: 'Réglages', i: 'gear', f: vSettings }
+  };
+  function render() {
+    const y = window.scrollY, V = VIEWS[U.view], now = new Date(), t = E.todayDn(now);
+    const alerts = E.computeAlerts(S, t, 7).filter(a => a.level === 'danger');
+    const navs = Object.entries(VIEWS);
+    let banner = '';
+    if (!S.settings.configured) banner = `<div class="banner">${icon('alert')}Date de référence non configurée : le planning n'est pas fiable.<button class="btn sm" data-a="openSetup">Configurer</button></div>`;
+    else if (alerts.length) banner = `<div class="banner danger">${icon('alert')}${alerts.length} conflit(s) dans les 7 prochains jours.<button class="btn sm" data-a="go" data-v="home">Voir</button></div>`;
+    $('#app').innerHTML = `<div class="app"><aside class="side"><div class="brand"><div class="logo">${icon('calendar')}</div><div><b>Smart Life Planner</b><span>Douanes · Full Stack</span></div></div>
+      ${navs.map(([k, v]) => `<button class="nav ${U.view === k ? 'on' : ''}" data-a="go" data-v="${k}">${icon(v.i)}${v.n}</button>`).join('')}
+      <div class="side-foot">Cycle réglé sur le ${E.dayLong(E.toDn(S.settings.refDate))}, ${esc(E.PHASE_NAMES[S.settings.refPhase].toLowerCase())}.</div></aside>
+      <div class="main"><header class="top"><h1>${V.t}</h1><button class="ib" data-a="themeToggle" aria-label="Changer de thème">${icon(isDark() ? 'sun' : 'moon')}</button><div class="date">${E.dayLong(t)} ${E.parts(t).y}</div></header>${banner}<main id="main">${V.f()}</main></div>
+      <nav class="bottom" aria-label="Navigation">${navs.map(([k, v]) => `<button class="bnav ${U.view === k ? 'on' : ''}" data-a="go" data-v="${k}">${icon(v.i)}${v.s}</button>`).join('')}</nav></div>`;
+    window.scrollTo(0, y);
+  }
+  function refresh() { render(); renderModal(); }
+
+  /* ---------- Actions ---------- */
+  const A = {
+    go(d) { U.view = d.v; U.modal = null; refresh(); window.scrollTo(0, 0); },
+    acadGo() { U.view = 'acad'; U.acadSub = 'makeups'; refresh(); },
+    themeToggle() { S.settings.theme = isDark() ? 'light' : 'dark'; applyTheme(); save(); refresh(); },
+    theme(d) { S.settings.theme = d.s; applyTheme(); save(); refresh(); },
+    proSub(d) { U.proSub = d.s; refresh(); }, acadSub(d) { U.acadSub = d.s; refresh(); }, agSub(d) { U.agSub = d.s; refresh(); },
+    mprev() { U.mM--; if (U.mM < 0) { U.mM = 11; U.mY--; } refresh(); }, mnext() { U.mM++; if (U.mM > 11) { U.mM = 0; U.mY++; } refresh(); },
+    mtoday() { const n = new Date(); U.mY = n.getFullYear(); U.mM = n.getMonth(); refresh(); },
+    yprev() { U.yY--; refresh(); }, ynext() { U.yY++; refresh(); },
+    openMonth(d) { U.mY = U.yY; U.mM = Number(d.m); U.proSub = 'month'; refresh(); },
+    wprev() { U.weekDn -= 7; refresh(); }, wnext() { U.weekDn += 7; refresh(); }, wtoday() { U.weekDn = E.weekStart(E.todayDn()); refresh(); },
+    day(d) { U.modal = { t: 'day', date: d.d }; refresh(); },
+    closeModal() { U.modal = null; refresh(); },
+    ovClick(d, e) { if (e.target.classList.contains('ov')) A.closeModal(); },
+    sess(d) {
+      E.setSessionStatus(S, d.d, d.s); save();
+      if (d.s === 'absent') toast('Absence enregistrée : tâche de rattrapage créée.', 'warn');
+      refresh();
+    },
+    actToggle(d) {
+      const a = S.activities.find(x => x.id === d.id); if (!a) return;
+      E.setActivityStatus(S, a, a.status === 'done' ? 'planned' : 'done'); save();
+      toast(a.status === 'done' ? 'Activité terminée.' : 'Activité remise à faire.'); refresh();
+    },
+    actNew(d) {
+      const date = d.d || E.fromDn(E.todayDn()), type = d.t || 'fr', info = E.dayInfo(E.toDn(date), S);
+      const dflt = { fr: '15:00', en: '11:00', ai: '10:00', sport: '17:30', other: '14:00', rattrapage: '10:00' }[type], s = E.tmin(dflt), len = type === 'sport' ? S.settings.sportMin : S.settings.actMin;
+      U.modal = { t: 'act', id: null, act: { title: T[type], type, status: 'planned', date, start: E.mtime(s), end: E.mtime(s + len) } }; refresh();
+    },
+    actEdit(d) { const a = S.activities.find(x => x.id === d.id); if (!a) return; U.modal = { t: 'act', id: a.id, act: { ...a } }; refresh(); },
+    actSave() {
+      const f = readAct(), m = U.modal; if (!f.title) f.title = T[f.type];
+      if (!f.date || !f.start || !f.end) { toast('Renseignez la date et les horaires.', 'err'); return; }
+      const v = E.validateActivity(f, S, m.id);
+      if (v.errors.length) { liveCheck(); toast('Cette activité ne peut pas être enregistrée : ' + v.errors[0], 'err'); return; }
+      if (m.id) {
+        const a = S.activities.find(x => x.id === m.id); Object.assign(a, f, { auto: false, locked: true });
+        if (a.status !== m.act.status) E.setActivityStatus(S, a, a.status);
+      } else S.activities.push({ id: E.uid(), ...f, auto: false, locked: false, makeupId: m.makeupId || null }), m.makeupId && linkMakeup(m.makeupId);
+      save(); U.modal = m.back ? { t: 'day', date: f.date } : null; toast(v.warnings.length ? 'Enregistrée. À noter : ' + v.warnings[0] : 'Activité enregistrée.', v.warnings.length ? 'warn' : ''); refresh();
+    },
+    actDel(d) {
+      const a = S.activities.find(x => x.id === d.id);
+      if (a && a.makeupId) { const mk = S.makeups.find(m => m.id === a.makeupId); if (mk) { mk.activityId = null; mk.status = 'todo'; } }
+      S.activities = S.activities.filter(x => x.id !== d.id); save(); U.modal = null; toast('Activité supprimée.'); refresh();
+    },
+    planWeek(d) {
+      const t = E.todayDn(), w = Number(d.w), r = E.planWeek(S, w, t, true); save();
+      planToast(r, 0); refresh();
+    },
+    planAhead(d) { const t = E.todayDn(), r = E.planWeeks(S, Number(d.w), 4, t, true); save(); planToast(r, 0); refresh(); },
+    clearAuto(d) { const w = Number(d.w), n = S.activities.length; S.activities = S.activities.filter(a => { const x = E.toDn(a.date); return !(a.auto && a.status === 'planned' && !a.makeupId && x >= w && x <= w + 6); }); save(); toast(`${n - S.activities.length} activité(s) retirée(s).`); refresh(); },
+    leaveAdd() {
+      const kind = $('#lv-kind').value, from = $('#lv-from').value, to = $('#lv-to').value || from, shift = $('#lv-shift').value;
+      if (!from) { toast('Choisissez une date.', 'err'); return; }
+      let n = 0; for (let d = E.toDn(from); d <= E.toDn(to) && d < E.toDn(from) + 400; d++) {
+        const raw = E.serviceStarting(d, { ...S, leaves: [] }), date = E.fromDn(d);
+        if (S.leaves.some(l => l.date === date)) continue;
+        if (kind === 'renfort' ? !raw : !!raw) { S.leaves.push({ id: E.uid(), date, kind, shift: kind === 'renfort' ? shift : null }); n++; }
+      }
+      if (!n) { toast(kind === 'renfort' ? 'Ces jours ont déjà un service.' : "Aucun service à annuler sur cette période.", 'warn'); return; }
+      replan(true); toast(`${n} jour(s) ajouté(s).`); refresh();
+    },
+    leaveDay(d) {
+      S.leaves = S.leaves.filter(l => l.date !== d.d); S.leaves.push({ id: E.uid(), date: d.d, kind: d.k, shift: d.sh || null });
+      replan(true); toast('Planning mis à jour.'); refresh();
+    },
+    leaveClear(d) { S.leaves = S.leaves.filter(l => l.date !== d.d); replan(true); toast('Planning mis à jour.'); refresh(); },
+    leaveDel(d) { S.leaves = S.leaves.filter(l => l.id !== d.id); replan(true); refresh(); },
+    mkPropose(d) {
+      const mk = S.makeups.find(m => m.id === d.id), t = E.todayDn(), c = E.proposeMakeupSlot(S, mk, t);
+      if (!c) { toast('Aucun créneau libre de 2 h dans les 4 prochaines semaines.', 'warn'); return; }
+      const a = { id: E.uid(), date: E.fromDn(c.dn), start: E.mtime(c.start), end: E.mtime(c.end), type: 'rattrapage', title: `Rattrapage du ${E.dayShort(E.toDn(mk.sessionDate))}`, status: 'planned', auto: false, locked: true, makeupId: mk.id };
+      S.activities.push(a); mk.activityId = a.id; mk.status = 'planned'; save(); toast(`Rattrapage planifié : ${E.dayLong(c.dn)} à ${a.start}.`); refresh();
+    },
+    mkManual(d) {
+      const mk = S.makeups.find(m => m.id === d.id), t = E.todayDn();
+      U.modal = { t: 'act', id: null, makeupId: mk.id, act: { title: `Rattrapage du ${E.dayShort(E.toDn(mk.sessionDate))}`, type: 'rattrapage', status: 'planned', date: E.fromDn(t + 1), start: '10:00', end: '12:00' } }; refresh();
+    },
+    mkDone(d) { const mk = S.makeups.find(m => m.id === d.id); mk.status = 'done'; S.sessions[mk.sessionDate] = { status: 'makeup' }; save(); toast('Rattrapage effectué.'); refresh(); },
+    modAdd() { const v = ($('#mod-new').value || '').trim(); if (!v) return; S.modules.push({ id: E.uid(), name: v, pct: 0 }); save(); refresh(); },
+    modDel(d) { S.modules = S.modules.filter(m => m.id !== d.id); save(); refresh(); },
+    fltReset() { U.flt = { from: '', to: '', type: 'all', status: 'all' }; refresh(); },
+    saveSettings() {
+      const s = S.settings, ref = $('#st-ref').value, ph = Number($('#st-phase').value);
+      if (!ref) { toast('Choisissez une date de référence.', 'err'); return; }
+      s.refDate = ref; s.refPhase = ph; s.configured = true; if (!s.since) s.since = E.fromDn(E.todayDn());
+      ['fr', 'en', 'ai', 'sport'].forEach(k => { const v = parseFloat($('#g-' + k).value); if (!isNaN(v) && v >= 0) s.goals[k] = v; });
+      const sm = parseInt($('#g-sportMin').value, 10); if (sm >= 30) s.sportMin = sm;
+      replan(); refresh();
+    },
+    setupSave() {
+      const ref = $('#st-ref').value; if (!ref) { toast('Choisissez une date de référence.', 'err'); return; }
+      S.settings.refDate = ref; S.settings.refPhase = Number($('#st-phase').value); S.settings.configured = true; if (!S.settings.since) S.settings.since = E.fromDn(E.todayDn());
+      U.modal = null; replan(); refresh();
+    },
+    setupLater() { U.modal = null; refresh(); },
+    openSetup() { U.modal = { t: 'setup' }; refresh(); },
+    export() { U.modal = { t: 'json', mode: 'export' }; refresh(); },
+    import() { U.modal = { t: 'json', mode: 'import' }; refresh(); },
+    copyJson() {
+      const box = $('#js-box'); box.select();
+      (navigator.clipboard ? navigator.clipboard.writeText(box.value) : Promise.reject()).then(() => toast('Copié.'), () => { try { document.execCommand('copy'); toast('Copié.'); } catch (e) { toast('Sélectionnez le texte et copiez-le manuellement.', 'warn'); } });
+    },
+    importGo() {
+      try { const o = JSON.parse($('#js-box').value); if (!o || !o.settings || !Array.isArray(o.activities)) throw 0; S = migrate(o); save(); applyTheme(); U.modal = null; toast('Données importées.'); refresh(); }
+      catch (e) { toast('Sauvegarde invalide : vérifiez le texte collé.', 'err'); }
+    },
+    runTests() { U.modal = { t: 'tests' }; refresh(); },
+    resetAsk() { U.resetStep = 1; refresh(); }, resetNo() { U.resetStep = 0; refresh(); },
+    resetGo() { S = defaultState(); save(); applyTheme(); U.resetStep = 0; U.modal = { t: 'setup' }; refresh(); }
+  };
+  function linkMakeup(id) {
+    const mk = S.makeups.find(m => m.id === id), a = S.activities[S.activities.length - 1]; if (mk && a) { mk.activityId = a.id; mk.status = 'planned'; }
+  }
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-a]'); if (!el) return;
+    const fn = A[el.dataset.a]; if (fn) { if (el.tagName === 'A') e.preventDefault(); fn(el.dataset, e); }
+  });
+  document.addEventListener('change', e => {
+    const el = e.target, c = el.dataset && el.dataset.c;
+    if (c === 'sf') { U.sf[el.dataset.f] = el.value; refresh(); }
+    else if (c === 'flt') { U.flt[el.dataset.f] = el.value; refresh(); }
+    else if (c === 'jnote' || c === 'jextra') {
+      const k = el.dataset.key, j = S.journal[k] || (S.journal[k] = {});
+      if (c === 'jnote') j.note = el.value; else j.extra = el.value; save();
+    }
+    else if (c === 'modName') { const m = S.modules.find(x => x.id === el.dataset.id); if (m) { m.name = el.value; save(); } }
+    else if (c === 'modPct') { const m = S.modules.find(x => x.id === el.dataset.id); if (m) { m.pct = Number(el.value); save(); refresh(); } }
+  });
+  document.addEventListener('input', e => {
+    const el = e.target;
+    if (el.classList && el.classList.contains('actf')) liveCheck();
+    if (el.classList && el.classList.contains('livep')) { const r = $('#st-ref').value, p = Number($('#st-phase').value); if (r) $('#st-prev').innerHTML = preview(r, p); }
+  });
+  document.addEventListener('change', e => { if (e.target.classList && e.target.classList.contains('livep')) { const r = $('#st-ref').value, p = Number($('#st-phase').value); if (r) $('#st-prev').innerHTML = preview(r, p); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && U.modal && U.modal.t !== 'setup') A.closeModal(); });
+
+  /* Compte à rebours en direct */
+  setInterval(() => {
+    document.querySelectorAll('[data-cd]').forEach(el => {
+      const ms = Number(el.dataset.cd) - Date.now(); el.textContent = fmtCd(ms);
+      if (ms < -1000 && !el.dataset.done) { el.dataset.done = '1'; render(); }
+    });
+  }, 1000);
+  /* Minuit passé : on remet à jour la date du jour */
+  let lastDay = E.todayDn(); setInterval(() => { const n = E.todayDn(); if (n !== lastDay) { lastDay = n; refresh(); } }, 30000);
+
+  applyTheme();
+  if (!S.settings.configured) U.modal = { t: 'setup' };
+  refresh();
+  window.__slp = { get S() { return S; }, U, refresh };
+})();
+
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+</body></html>
